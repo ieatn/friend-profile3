@@ -54,11 +54,9 @@ def create_profile():
         cursor = conn.cursor()
 
         profile_data = request.json.get('profile_data')
+        sql = "INSERT INTO friend_profiles (profile_data) VALUES (%s)"
+        cursor.execute(sql, (profile_data,))
 
-        cursor.execute(
-            "INSERT INTO friend_profiles (profile_data) VALUES (%s)",
-            (json.dumps(profile_data),)
-        )
         conn.commit()
 
         return jsonify({'message': 'Profile created successfully!'}), 201
