@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {
-  // need to create new auth0 app for logout
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
   if (isLoading) {
@@ -14,9 +13,17 @@ function App() {
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-4xl font-bold mb-8">Create Your Own Friend Profile!</h1>
       {isAuthenticated ? (
-        <Link to="/form" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Go to Form
-        </Link>
+        <>
+          <Link to="/form" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+            Go to Form
+          </Link>
+          <button
+            onClick={() => logout()}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Log Out
+          </button>
+        </>
       ) : (
         <button
           onClick={() => loginWithRedirect()}

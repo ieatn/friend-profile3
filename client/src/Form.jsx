@@ -166,7 +166,7 @@ export default function Form() {
           </Button>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-center mt-10">
           <Button variant="contained" color="primary" type="submit">
             {id ? 'Update Profile' : 'Create Profile'}
           </Button>
@@ -176,8 +176,8 @@ export default function Form() {
       <Link to="/" className='fixed top-10 right-10'>
         <Button variant="contained">Home</Button>
       </Link>
-      <Link to="/profile">
-        <Button variant="contained">Profile</Button>
+      <Link to="/profile" className='mt-20'>
+        <Button variant="outlined">Your Profiles</Button>
       </Link>
     </div>
   );
