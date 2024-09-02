@@ -97,8 +97,9 @@ def update_profile(id):
 
         cursor.execute(
             "UPDATE friend_profiles SET profile_data = %s WHERE id = %s",
-            (json.dumps(profile_data), id)
+            (profile_data, id)  # No need to use json.dumps here
         )
+        
         conn.commit()
 
         if cursor.rowcount == 0:

@@ -1,49 +1,62 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { InputLabel, MenuItem, Select, FormControl } from '@mui/material';
-import axios from 'axios'; // Ensure axios is imported
-import { API_URL } from './api/Config'; // Ensure API_URL is configured
+import axios from 'axios';
+import { API_URL } from './api/Config';
 
 export default function Form() {
+  const { id } = useParams(); // Get profile ID from URL
+  const navigate = useNavigate();
+
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [hobbies, setHobbies] = useState([]);
 
+  // Fetch profile data if ID is provided
+  useEffect(() => {
+    if (id) {
+      axios.get(`${API_URL}/profiles/${id}`)
+        .then(response => {
+          const profile = response.data;
+          const profileData = JSON.parse(profile.profile_data);
+          setName(profileData.name);
+          setAge(profileData.age);
+          setContactEmail(profileData.contact.email);
+          setContactPhone(profileData.contact.phone);
+          setHobbies(profileData.hobbies);
+        })
+        .catch(error => console.error('Error fetching profile:', error));
+    }
+  }, [id]);
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Create the profile object
-    const profileData = {
+    const profileData = JSON.stringify({
       name,
       age,
       contact: {
         email: contactEmail,
-        phone: contactPhone,
+        phone: contactPhone
       },
-      hobbies,
-    };
-
-    // Convert profile data to JSON string
-    const profileDataJson = JSON.stringify(profileData);
-
+      hobbies
+    });
 
     try {
-      console.log(profileData)
-      console.log(typeof(profileData))
-      console.log('Profile data:', profileDataJson);
-      console.log('type:', typeof(profileDataJson));
-      await axios.post(`${API_URL}/profiles`, { profile_data: profileDataJson });
-      alert('Profile created successfully!');
-      // Optionally, redirect or clear fields here
-      handleClear();
+      if (id) {
+        // Update existing profile
+        await axios.put(`${API_URL}/profiles/${id}`, { profile_data: profileData });
+      } else {
+        // Create new profile
+        await axios.post(`${API_URL}/profiles`, { profile_data: profileData });
+      }
+      navigate('/profile'); // Redirect to profile page
     } catch (error) {
-      console.error('There was an error creating the profile!', error);
-      alert('Failed to create profile. Please try again.');
+      console.error('Error saving profile:', error);
     }
   };
 
@@ -151,8 +164,11 @@ export default function Form() {
           <Button variant="outlined" color="success" onClick={handleGenerateDefault}>
             Generate Default
           </Button>
+        </div>
+
+        <div className="flex justify-end">
           <Button variant="contained" color="primary" type="submit">
-            Create Profile
+            {id ? 'Update Profile' : 'Create Profile'}
           </Button>
         </div>
       </form>
@@ -161,7 +177,7 @@ export default function Form() {
         <Button variant="contained">Home</Button>
       </Link>
       <Link to="/profile">
-        <Button variant="contained">View Profiles</Button>
+        <Button variant="contained">Profile</Button>
       </Link>
     </div>
   );

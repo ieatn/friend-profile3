@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
 
 function App() {
+  // need to create new auth0 app for logout
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
 
   if (isLoading) {
