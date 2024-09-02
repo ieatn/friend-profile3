@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 
 export default function Form() {
   const [name, setName] = useState('');
-  const [age, setAge] = useState('');
   
   const handleSubmit = (e) => {
     e.preventDefault();

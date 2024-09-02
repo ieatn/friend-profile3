@@ -28,6 +28,24 @@ connection_pool = pooling.MySQLConnectionPool(
 def hello_world():
     return "Hello, World!"
 
+# READ: Get all profiles
+@app.route('/profiles', methods=['GET'])
+def get_all_profiles():
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM friend_profiles")
+        profiles = cursor.fetchall()
+
+        return jsonify(profiles), 200
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 # CREATE: Insert a new profile
 @app.route('/profiles', methods=['POST'])
 def create_profile():
