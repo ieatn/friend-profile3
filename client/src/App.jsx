@@ -1,6 +1,9 @@
 import './App.css';
 import { Link } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
+import 'swiper/css';
+import 'swiper/css/effect-cards';
+import { EffectCards } from 'swiper/modules';
 
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();

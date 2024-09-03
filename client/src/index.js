@@ -11,6 +11,8 @@ import Login from './Login.jsx';
 import ProfileDetail from './ProfileDetail.jsx'; // Import your dynamic route component
 import { Auth0Provider } from "@auth0/auth0-react";
 import { domain, clientId } from "./api/Config";
+import 'swiper/css';
+import 'swiper/css/effect-cards';
 
 const router = createBrowserRouter([
   {
