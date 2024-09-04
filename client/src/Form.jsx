@@ -17,6 +17,9 @@ export default function Form() {
     favoriteRestaurants: '',
     sports: '',
     accomplishments: '',
+    spiritualReligious: '', // New field
+    aboutMe: '', // New field
+    tagline: '', // New field
   });
 
   const [lifestyle, setLifestyle] = useState({
@@ -84,7 +87,7 @@ export default function Form() {
   };
 
   const handleClear = () => {
-    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '' });
+    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '', spiritualReligious: '', aboutMe: '', tagline: '' });
     setLifestyle({ occupation: '', values: [], goals: '', financialGoals: '', financialSituation: '', favoriteCauses: '' });
     setInterests({ hobbies: [], favoriteActivities: [], favoriteMedia: [], favoriteTVShows: '', favoriteGames: '', favoriteBooks: '', favoriteQuotes: '' });
     setContact({ facebook: '', instagram: '', twitter: '', linkedin: '', phone: '', email: '' });
@@ -100,6 +103,9 @@ export default function Form() {
       favoriteRestaurants: 'Olive Garden, Nobu',
       sports: 'Basketball, Tennis',
       accomplishments: 'Ran a marathon, Published a book',
+      spiritualReligious: 'Christian', // Default spiritual/religious views
+      aboutMe: 'I am a passionate individual with a love for learning and exploring new experiences. I enjoy spending time with friends and family, and I am always looking for new opportunities to grow and improve myself.', // Default about me
+      tagline: 'Embrace the journey, not the destination.', // Default tagline
     });
     setLifestyle({
       occupation: 'Software Developer',
@@ -187,6 +193,28 @@ export default function Form() {
               fullWidth
               multiline
               rows={2}
+            />
+            <TextField
+              label="Spiritual/Religious Views"
+              value={personalInfo.spiritualReligious}
+              onChange={(e) => setPersonalInfo({...personalInfo, spiritualReligious: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Tagline"
+              value={personalInfo.tagline}
+              onChange={(e) => setPersonalInfo({...personalInfo, tagline: e.target.value})}
+              fullWidth
+              helperText="A short phrase about you"
+            />
+            <TextField
+              label="About Me"
+              value={personalInfo.aboutMe}
+              onChange={(e) => setPersonalInfo({...personalInfo, aboutMe: e.target.value})}
+              fullWidth
+              multiline
+              rows={3}
+              className="col-span-2"
             />
           </div>
         </div>

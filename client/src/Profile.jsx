@@ -55,22 +55,27 @@ export default function Profile() {
     };
 
     const renderInterestItem = (label, value) => {
-      if (value && (typeof value === 'string' ? value.trim() : value.length > 0)) {
+      if (value && value.length > 0) {
         return <InfoItem label={label} value={value} />;
       }
       return null;
     };
 
-    const renderSection = (title, icon, content) => {
-      if (React.Children.count(content) > 0) {
-        return (
-          <Section title={title} icon={icon}>
-            {content}
-          </Section>
-        );
-      }
-      return null;
-    };
+    const renderSection = (title, icon, children) => (
+      <Box className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+        <Typography variant="h6" className="font-bold mb-3 flex items-center">
+          <span className="mr-2">{icon}</span> {title}
+        </Typography>
+        <Box className="space-y-2">{children}</Box>
+      </Box>
+    );
+
+    const InfoItem = ({ label, value }) => (
+      <Box className="text-sm flex items-center">
+        <Typography variant="subtitle2" component="span" className="font-semibold text-white/80 mr-2">{label}</Typography>
+        <Typography component="span" className="text-white">{value}</Typography>
+      </Box>
+    );
 
     return (
       <Box 
@@ -107,12 +112,25 @@ export default function Profile() {
           {profile.profile_data.personalInfo.name}
         </Typography>
         
+        {profile.profile_data.personalInfo.tagline && (
+          <Typography variant="subtitle1" className="mb-4 text-center italic">
+            "{profile.profile_data.personalInfo.tagline}"
+          </Typography>
+        )}
+        
         <Box className="space-y-8">
+          {renderSection("About Me", "📝", (
+            <Typography>
+              {profile.profile_data.personalInfo.aboutMe}
+            </Typography>
+          ))}
+
           {renderSection("Personal Info", "👤", (
             <>
               {renderInterestItem("Age:", profile.profile_data.personalInfo.age)}
               {renderInterestItem("Location:", profile.profile_data.personalInfo.location)}
-              {renderInterestItem("Status:", profile.profile_data.personalInfo.relationshipStatus)}
+              {renderInterestItem("Relationship Status:", profile.profile_data.personalInfo.relationshipStatus)}
+              {renderInterestItem("Spiritual/Religious Views:", profile.profile_data.personalInfo.spiritualReligious)}
               {renderInterestItem("Favorite Food:", profile.profile_data.personalInfo.favoriteFood)}
               {renderInterestItem("Favorite Restaurants:", profile.profile_data.personalInfo.favoriteRestaurants)}
               {renderInterestItem("Sports:", profile.profile_data.personalInfo.sports)}
@@ -126,33 +144,30 @@ export default function Profile() {
               {renderInterestItem("Goals:", profile.profile_data.lifestyle.goals)}
               {renderInterestItem("Financial Goals:", profile.profile_data.lifestyle.financialGoals)}
               {renderInterestItem("Favorite Causes:", profile.profile_data.lifestyle.favoriteCauses)}
-              {profile.profile_data.lifestyle.values.length > 0 && (
-                <Box>
-                  <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
-                  <Box className="flex flex-wrap gap-2">
-                    {profile.profile_data.lifestyle.values.map((value, idx) => (
-                      <Chip key={idx} label={value} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                    ))}
-                  </Box>
+              <Box>
+                <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
+                <Box className="flex flex-wrap gap-2">
+                  {profile.profile_data.lifestyle.values.map((value, idx) => (
+                    <Chip key={idx} label={value} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
+                  ))}
                 </Box>
-              )}
+              </Box>
             </>
           ))}
           
           {renderSection("Interests", "❤️", (
             <>
-              {profile.profile_data.interests.hobbies.length > 0 && (
-                <Box>
-                  <Typography variant="subtitle2" className="font-semibold mb-2">Hobbies:</Typography>
-                  <Box className="flex flex-wrap gap-2">
-                    {profile.profile_data.interests.hobbies.map((hobby, idx) => (
-                      <Chip key={idx} label={hobby} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                    ))}
-                  </Box>
+              <Box>
+                <Typography variant="subtitle2" className="font-semibold mb-2">Hobbies:</Typography>
+                <Box className="flex flex-wrap gap-2">
+                  {profile.profile_data.interests.hobbies.map((hobby, idx) => (
+                    <Chip key={idx} label={hobby} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
+                  ))}
                 </Box>
-              )}
+              </Box>
               {renderInterestItem("Favorite Activities:", profile.profile_data.interests.favoriteActivities.join(', '))}
               {renderInterestItem("Favorite Media:", profile.profile_data.interests.favoriteMedia.join(', '))}
+              
               {renderInterestItem("Favorite TV Shows:", profile.profile_data.interests.favoriteTVShows)}
               {renderInterestItem("Favorite Games:", profile.profile_data.interests.favoriteGames)}
               {renderInterestItem("Favorite Books:", profile.profile_data.interests.favoriteBooks)}
@@ -165,10 +180,15 @@ export default function Profile() {
               {profile.profile_data.contact && (
                 <>
                   {renderInterestItem(<EmailIcon fontSize="small" sx={{ color: '#EA4335', marginRight: '8px' }} />, profile.profile_data.contact.email)}
+                  <Box my={1} />
                   {renderInterestItem(<PhoneIcon fontSize="small" sx={{ color: '#34A853', marginRight: '8px' }} />, profile.profile_data.contact.phone)}
+                  <Box my={1} />
                   {renderInterestItem(<FacebookIcon fontSize="small" sx={{ color: '#1877F2', marginRight: '8px' }} />, profile.profile_data.contact.facebook)}
+                  <Box my={1} />
                   {renderInterestItem(<InstagramIcon fontSize="small" sx={{ color: '#E4405F', marginRight: '8px' }} />, profile.profile_data.contact.instagram)}
+                  <Box my={1} />
                   {renderInterestItem(<TwitterIcon fontSize="small" sx={{ color: '#1DA1F2', marginRight: '8px' }} />, profile.profile_data.contact.twitter)}
+                  <Box my={1} />
                   {renderInterestItem(<LinkedInIcon fontSize="small" sx={{ color: '#0A66C2', marginRight: '8px' }} />, profile.profile_data.contact.linkedin)}
                 </>
               )}
@@ -185,22 +205,6 @@ export default function Profile() {
       </Box>
     );
   };
-
-  const Section = ({ title, icon, children }) => (
-    <Box className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-      <Typography variant="h6" className="font-bold mb-3 flex items-center">
-        <span className="mr-2">{icon}</span> {title}
-      </Typography>
-      <Box className="space-y-2">{children}</Box>
-    </Box>
-  );
-
-  const InfoItem = ({ label, value }) => (
-    <Box className="text-sm flex items-center">
-      <Typography variant="subtitle2" component="span" className="font-semibold text-white/80 mr-2">{label}</Typography>
-      <Typography component="span" className="text-white">{value}</Typography>
-    </Box>
-  );
 
   return (
     <Box className="relative w-full h-screen flex justify-center items-center bg-gradient-to-br from-purple-200 to-indigo-200">
