@@ -101,11 +101,17 @@ export default function Profile() {
             <InfoItem label="Age:" value={profile.profile_data.personalInfo.age} />
             <InfoItem label="Location:" value={profile.profile_data.personalInfo.location} />
             <InfoItem label="Status:" value={profile.profile_data.personalInfo.relationshipStatus} />
+            <InfoItem label="Favorite Food:" value={profile.profile_data.personalInfo.favoriteFood} />
+            <InfoItem label="Favorite Restaurants:" value={profile.profile_data.personalInfo.favoriteRestaurants} />
+            <InfoItem label="Sports:" value={profile.profile_data.personalInfo.sports} />
+            <InfoItem label="Accomplishments:" value={profile.profile_data.personalInfo.accomplishments} />
           </Section>
           
           <Section title="Lifestyle" icon="🌟">
             <InfoItem label="Occupation:" value={profile.profile_data.lifestyle.occupation} />
             <InfoItem label="Goals:" value={profile.profile_data.lifestyle.goals} />
+            <InfoItem label="Financial Goals:" value={profile.profile_data.lifestyle.financialGoals} />
+            <InfoItem label="Favorite Causes:" value={profile.profile_data.lifestyle.favoriteCauses} />
             <Box>
               <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
               <Box className="flex flex-wrap gap-2">
