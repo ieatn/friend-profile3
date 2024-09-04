@@ -13,18 +13,36 @@ export default function Form() {
     age: '',
     location: '',
     relationshipStatus: '',
+    favoriteFood: '',
+    favoriteRestaurants: '',
+    sports: '',
+    accomplishments: '',
   });
 
   const [lifestyle, setLifestyle] = useState({
     occupation: '',
     values: [],
     goals: '',
+    financialGoals: '',
+    financialSituation: '',
+    favoriteCauses: '',
   });
 
   const [interests, setInterests] = useState({
     hobbies: [],
     favoriteActivities: [],
     favoriteMedia: [],
+    favoriteTVShows: '',
+    favoriteGames: '',
+    favoriteBooks: '',
+    favoriteQuotes: '',
+  });
+
+  const [contact, setContact] = useState({
+    facebook: '',
+    instagram: '',
+    twitter: '',
+    linkedin: '',
   });
 
   useEffect(() => {
@@ -36,6 +54,7 @@ export default function Form() {
           setPersonalInfo(profileData.personalInfo);
           setLifestyle(profileData.lifestyle);
           setInterests(profileData.interests);
+          setContact(profileData.contact);
         })
         .catch(error => console.error('Error fetching profile:', error));
     }
@@ -47,6 +66,7 @@ export default function Form() {
       personalInfo,
       lifestyle,
       interests,
+      contact,
     });
 
     try {
@@ -62,9 +82,10 @@ export default function Form() {
   };
 
   const handleClear = () => {
-    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '' });
-    setLifestyle({ occupation: '', values: [], goals: '' });
-    setInterests({ hobbies: [], favoriteActivities: [], favoriteMedia: [] });
+    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '' });
+    setLifestyle({ occupation: '', values: [], goals: '', financialGoals: '', financialSituation: '', favoriteCauses: '' });
+    setInterests({ hobbies: [], favoriteActivities: [], favoriteMedia: [], favoriteTVShows: '', favoriteGames: '', favoriteBooks: '', favoriteQuotes: '' });
+    setContact({ facebook: '', instagram: '', twitter: '', linkedin: '' });
   };
 
   const handleGenerateDefault = () => {
@@ -73,16 +94,33 @@ export default function Form() {
       age: '30',
       location: 'New York, NY',
       relationshipStatus: 'Single',
+      favoriteFood: 'Italian cuisine, sushi',
+      favoriteRestaurants: 'Olive Garden, Nobu',
+      sports: 'Basketball, Tennis',
+      accomplishments: 'Ran a marathon, Published a book',
     });
     setLifestyle({
       occupation: 'Software Developer',
       values: ['Honesty', 'Creativity', 'Growth'],
       goals: 'Learn a new language, travel to Japan',
+      financialGoals: 'Save for retirement, Buy a house',
+      financialSituation: 'Stable, focusing on investments',
+      favoriteCauses: 'Environmental conservation, Education for all',
     });
     setInterests({
       hobbies: ['Photography', 'Cooking', 'Yoga'],
       favoriteActivities: ['Hiking', 'Beach trips', 'Board games'],
       favoriteMedia: ['Sci-fi movies', 'Jazz music', 'Mystery novels'],
+      favoriteTVShows: 'Stranger Things, The Office, Breaking Bad',
+      favoriteGames: 'The Legend of Zelda, Chess, Sudoku',
+      favoriteBooks: '1984 by George Orwell, To Kill a Mockingbird by Harper Lee',
+      favoriteQuotes: '"Be the change you wish to see in the world." - Mahatma Gandhi',
+    });
+    setContact({
+      facebook: 'https://facebook.com/johndoe',
+      instagram: 'https://instagram.com/johndoe',
+      twitter: 'https://twitter.com/johndoe',
+      linkedin: 'https://linkedin.com/in/johndoe',
     });
   };
 
@@ -119,6 +157,32 @@ export default function Form() {
               value={personalInfo.relationshipStatus}
               onChange={(e) => setPersonalInfo({...personalInfo, relationshipStatus: e.target.value})}
               fullWidth
+            />
+            <TextField
+              label="Favorite Food"
+              value={personalInfo.favoriteFood}
+              onChange={(e) => setPersonalInfo({...personalInfo, favoriteFood: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Favorite Restaurants"
+              value={personalInfo.favoriteRestaurants}
+              onChange={(e) => setPersonalInfo({...personalInfo, favoriteRestaurants: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Sports"
+              value={personalInfo.sports}
+              onChange={(e) => setPersonalInfo({...personalInfo, sports: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Accomplishments"
+              value={personalInfo.accomplishments}
+              onChange={(e) => setPersonalInfo({...personalInfo, accomplishments: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
             />
           </div>
         </div>
@@ -157,6 +221,28 @@ export default function Form() {
               label="Goals"
               value={lifestyle.goals}
               onChange={(e) => setLifestyle({...lifestyle, goals: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Financial Goals"
+              value={lifestyle.financialGoals}
+              onChange={(e) => setLifestyle({...lifestyle, financialGoals: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Financial Situation"
+              value={lifestyle.financialSituation}
+              onChange={(e) => setLifestyle({...lifestyle, financialSituation: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Favorite Causes/Non-Profits"
+              value={lifestyle.favoriteCauses}
+              onChange={(e) => setLifestyle({...lifestyle, favoriteCauses: e.target.value})}
               fullWidth
               multiline
               rows={2}
@@ -201,6 +287,68 @@ export default function Form() {
               onChange={(e) => setInterests({...interests, favoriteMedia: e.target.value.split(', ')})}
               fullWidth
               helperText="Separate media types with commas (e.g., movies, books, music)"
+            />
+            <TextField
+              label="Favorite TV Shows"
+              value={interests.favoriteTVShows}
+              onChange={(e) => setInterests({...interests, favoriteTVShows: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Favorite Games"
+              value={interests.favoriteGames}
+              onChange={(e) => setInterests({...interests, favoriteGames: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Favorite Books"
+              value={interests.favoriteBooks}
+              onChange={(e) => setInterests({...interests, favoriteBooks: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Favorite Quotes"
+              value={interests.favoriteQuotes}
+              onChange={(e) => setInterests({...interests, favoriteQuotes: e.target.value})}
+              fullWidth
+              multiline
+              rows={2}
+            />
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl mb-4">Social Media Links</h2>
+          <div className="grid grid-cols-1 gap-4">
+            <TextField
+              label="Facebook"
+              value={contact.facebook}
+              onChange={(e) => setContact({...contact, facebook: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Instagram"
+              value={contact.instagram}
+              onChange={(e) => setContact({...contact, instagram: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Twitter"
+              value={contact.twitter}
+              onChange={(e) => setContact({...contact, twitter: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="LinkedIn"
+              value={contact.linkedin}
+              onChange={(e) => setContact({...contact, linkedin: e.target.value})}
+              fullWidth
             />
           </div>
         </div>

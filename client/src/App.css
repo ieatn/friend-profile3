@@ -1,19 +1,19 @@
+/* Custom Scrollbar Styles */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 12px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent; /* Hide track */
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom, #7b42f6, #60a5fa);
-    border-radius: 6px;
-    border: 3px solid transparent; /* Adds space around the thumb */
-    background-clip: content-box; /* Clips thumb background to the padding-box */
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(to bottom, #8e54e9, #5e60ce); /* Lighter gradient on hover */
-  }
-  .custom-scrollbar {
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #7b42f6 #transparent; /* Thumb color and track color for Firefox */
-  }
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
