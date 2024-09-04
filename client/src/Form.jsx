@@ -43,6 +43,8 @@ export default function Form() {
     instagram: '',
     twitter: '',
     linkedin: '',
+    phone: '', // New field
+    email: '', // New field
   });
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function Form() {
     setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '' });
     setLifestyle({ occupation: '', values: [], goals: '', financialGoals: '', financialSituation: '', favoriteCauses: '' });
     setInterests({ hobbies: [], favoriteActivities: [], favoriteMedia: [], favoriteTVShows: '', favoriteGames: '', favoriteBooks: '', favoriteQuotes: '' });
-    setContact({ facebook: '', instagram: '', twitter: '', linkedin: '' });
+    setContact({ facebook: '', instagram: '', twitter: '', linkedin: '', phone: '', email: '' });
   };
 
   const handleGenerateDefault = () => {
@@ -121,6 +123,8 @@ export default function Form() {
       instagram: 'https://instagram.com/johndoe',
       twitter: 'https://twitter.com/johndoe',
       linkedin: 'https://linkedin.com/in/johndoe',
+      phone: '(555) 123-4567', // Default phone number
+      email: 'johndoe@example.com', // Default email
     });
   };
 
@@ -324,8 +328,21 @@ export default function Form() {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl mb-4">Social Media Links</h2>
+          <h2 className="text-xl mb-4">Contact Information</h2>
           <div className="grid grid-cols-1 gap-4">
+            <TextField
+              label="Phone Number"
+              value={contact.phone}
+              onChange={(e) => setContact({...contact, phone: e.target.value})}
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              type="email"
+              value={contact.email}
+              onChange={(e) => setContact({...contact, email: e.target.value})}
+              fullWidth
+            />
             <TextField
               label="Facebook"
               value={contact.facebook}

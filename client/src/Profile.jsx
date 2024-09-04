@@ -8,6 +8,12 @@ import 'swiper/css';
 import 'swiper/css/effect-cards';
 import { API_URL } from './api/Config';
 import './App.css';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
 
 export default function Profile() {
   const [profiles, setProfiles] = useState([]);
@@ -90,16 +96,16 @@ export default function Profile() {
           {profile.profile_data.personalInfo.name}
         </Typography>
         
-        <Box className="space-y-6">
+        <Box className="space-y-8">
           <Section title="Personal Info" icon="👤">
-            <InfoItem label="Age" value={profile.profile_data.personalInfo.age} />
-            <InfoItem label="Location" value={profile.profile_data.personalInfo.location} />
-            <InfoItem label="Status" value={profile.profile_data.personalInfo.relationshipStatus} />
+            <InfoItem label="Age:" value={profile.profile_data.personalInfo.age} />
+            <InfoItem label="Location:" value={profile.profile_data.personalInfo.location} />
+            <InfoItem label="Status:" value={profile.profile_data.personalInfo.relationshipStatus} />
           </Section>
           
           <Section title="Lifestyle" icon="🌟">
-            <InfoItem label="Occupation" value={profile.profile_data.lifestyle.occupation} />
-            <InfoItem label="Goals" value={profile.profile_data.lifestyle.goals} />
+            <InfoItem label="Occupation:" value={profile.profile_data.lifestyle.occupation} />
+            <InfoItem label="Goals:" value={profile.profile_data.lifestyle.goals} />
             <Box>
               <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
               <Box className="flex flex-wrap gap-2">
@@ -119,13 +125,51 @@ export default function Profile() {
                 ))}
               </Box>
             </Box>
-            {renderInterestItem("Favorite Activities", profile.profile_data.interests.favoriteActivities.join(', '))}
-            {renderInterestItem("Favorite Media", profile.profile_data.interests.favoriteMedia.join(', '))}
+            {renderInterestItem("Favorite Activities:", profile.profile_data.interests.favoriteActivities.join(', '))}
+            {renderInterestItem("Favorite Media:", profile.profile_data.interests.favoriteMedia.join(', '))}
             
-            {renderInterestItem("Favorite TV Shows", profile.profile_data.interests.favoriteTVShows)}
-            {renderInterestItem("Favorite Games", profile.profile_data.interests.favoriteGames)}
-            {renderInterestItem("Favorite Books", profile.profile_data.interests.favoriteBooks)}
-            {renderInterestItem("Favorite Quotes", profile.profile_data.interests.favoriteQuotes)}
+            {renderInterestItem("Favorite TV Shows:", profile.profile_data.interests.favoriteTVShows)}
+            {renderInterestItem("Favorite Games:", profile.profile_data.interests.favoriteGames)}
+            {renderInterestItem("Favorite Books:", profile.profile_data.interests.favoriteBooks)}
+            {renderInterestItem("Favorite Quotes:", profile.profile_data.interests.favoriteQuotes)}
+          </Section>
+
+          <Section title="Contact" icon="📱">
+            <Box className="space-y-2">
+              {profile.profile_data.contact && (
+                <>
+                  <InfoItem 
+                    label={<EmailIcon fontSize="small" sx={{ color: '#EA4335', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.email} 
+                  />
+                  <Box my={1} />
+                  <InfoItem 
+                    label={<PhoneIcon fontSize="small" sx={{ color: '#34A853', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.phone} 
+                  />
+                  <Box my={1} />
+                  <InfoItem 
+                    label={<FacebookIcon fontSize="small" sx={{ color: '#1877F2', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.facebook} 
+                  />
+                  <Box my={1} />
+                  <InfoItem 
+                    label={<InstagramIcon fontSize="small" sx={{ color: '#E4405F', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.instagram} 
+                  />
+                  <Box my={1} />
+                  <InfoItem 
+                    label={<TwitterIcon fontSize="small" sx={{ color: '#1DA1F2', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.twitter} 
+                  />
+                  <Box my={1} />
+                  <InfoItem 
+                    label={<LinkedInIcon fontSize="small" sx={{ color: '#0A66C2', marginRight: '8px' }} />} 
+                    value={profile.profile_data.contact.linkedin} 
+                  />
+                </>
+              )}
+            </Box>
           </Section>
         </Box>
         
@@ -149,8 +193,8 @@ export default function Profile() {
   );
 
   const InfoItem = ({ label, value }) => (
-    <Box className="text-sm">
-      <Typography variant="subtitle2" component="span" className="font-semibold text-white/80">{label}: </Typography>
+    <Box className="text-sm flex items-center">
+      <Typography variant="subtitle2" component="span" className="font-semibold text-white/80 mr-2">{label}</Typography>
       <Typography component="span" className="text-white">{value}</Typography>
     </Box>
   );
