@@ -55,8 +55,19 @@ export default function Profile() {
     };
 
     const renderInterestItem = (label, value) => {
-      if (value && value.length > 0) {
+      if (value && (typeof value === 'string' ? value.trim() : value.length > 0)) {
         return <InfoItem label={label} value={value} />;
+      }
+      return null;
+    };
+
+    const renderSection = (title, icon, content) => {
+      if (React.Children.count(content) > 0) {
+        return (
+          <Section title={title} icon={icon}>
+            {content}
+          </Section>
+        );
       }
       return null;
     };
@@ -97,86 +108,72 @@ export default function Profile() {
         </Typography>
         
         <Box className="space-y-8">
-          <Section title="Personal Info" icon="👤">
-            <InfoItem label="Age:" value={profile.profile_data.personalInfo.age} />
-            <InfoItem label="Location:" value={profile.profile_data.personalInfo.location} />
-            <InfoItem label="Status:" value={profile.profile_data.personalInfo.relationshipStatus} />
-            <InfoItem label="Favorite Food:" value={profile.profile_data.personalInfo.favoriteFood} />
-            <InfoItem label="Favorite Restaurants:" value={profile.profile_data.personalInfo.favoriteRestaurants} />
-            <InfoItem label="Sports:" value={profile.profile_data.personalInfo.sports} />
-            <InfoItem label="Accomplishments:" value={profile.profile_data.personalInfo.accomplishments} />
-          </Section>
+          {renderSection("Personal Info", "👤", (
+            <>
+              {renderInterestItem("Age:", profile.profile_data.personalInfo.age)}
+              {renderInterestItem("Location:", profile.profile_data.personalInfo.location)}
+              {renderInterestItem("Status:", profile.profile_data.personalInfo.relationshipStatus)}
+              {renderInterestItem("Favorite Food:", profile.profile_data.personalInfo.favoriteFood)}
+              {renderInterestItem("Favorite Restaurants:", profile.profile_data.personalInfo.favoriteRestaurants)}
+              {renderInterestItem("Sports:", profile.profile_data.personalInfo.sports)}
+              {renderInterestItem("Accomplishments:", profile.profile_data.personalInfo.accomplishments)}
+            </>
+          ))}
           
-          <Section title="Lifestyle" icon="🌟">
-            <InfoItem label="Occupation:" value={profile.profile_data.lifestyle.occupation} />
-            <InfoItem label="Goals:" value={profile.profile_data.lifestyle.goals} />
-            <InfoItem label="Financial Goals:" value={profile.profile_data.lifestyle.financialGoals} />
-            <InfoItem label="Favorite Causes:" value={profile.profile_data.lifestyle.favoriteCauses} />
-            <Box>
-              <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
-              <Box className="flex flex-wrap gap-2">
-                {profile.profile_data.lifestyle.values.map((value, idx) => (
-                  <Chip key={idx} label={value} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                ))}
-              </Box>
-            </Box>
-          </Section>
+          {renderSection("Lifestyle", "🌟", (
+            <>
+              {renderInterestItem("Occupation:", profile.profile_data.lifestyle.occupation)}
+              {renderInterestItem("Goals:", profile.profile_data.lifestyle.goals)}
+              {renderInterestItem("Financial Goals:", profile.profile_data.lifestyle.financialGoals)}
+              {renderInterestItem("Favorite Causes:", profile.profile_data.lifestyle.favoriteCauses)}
+              {profile.profile_data.lifestyle.values.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
+                  <Box className="flex flex-wrap gap-2">
+                    {profile.profile_data.lifestyle.values.map((value, idx) => (
+                      <Chip key={idx} label={value} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </>
+          ))}
           
-          <Section title="Interests" icon="❤️">
-            <Box>
-              <Typography variant="subtitle2" className="font-semibold mb-2">Hobbies:</Typography>
-              <Box className="flex flex-wrap gap-2">
-                {profile.profile_data.interests.hobbies.map((hobby, idx) => (
-                  <Chip key={idx} label={hobby} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                ))}
-              </Box>
-            </Box>
-            {renderInterestItem("Favorite Activities:", profile.profile_data.interests.favoriteActivities.join(', '))}
-            {renderInterestItem("Favorite Media:", profile.profile_data.interests.favoriteMedia.join(', '))}
-            
-            {renderInterestItem("Favorite TV Shows:", profile.profile_data.interests.favoriteTVShows)}
-            {renderInterestItem("Favorite Games:", profile.profile_data.interests.favoriteGames)}
-            {renderInterestItem("Favorite Books:", profile.profile_data.interests.favoriteBooks)}
-            {renderInterestItem("Favorite Quotes:", profile.profile_data.interests.favoriteQuotes)}
-          </Section>
+          {renderSection("Interests", "❤️", (
+            <>
+              {profile.profile_data.interests.hobbies.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" className="font-semibold mb-2">Hobbies:</Typography>
+                  <Box className="flex flex-wrap gap-2">
+                    {profile.profile_data.interests.hobbies.map((hobby, idx) => (
+                      <Chip key={idx} label={hobby} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              {renderInterestItem("Favorite Activities:", profile.profile_data.interests.favoriteActivities.join(', '))}
+              {renderInterestItem("Favorite Media:", profile.profile_data.interests.favoriteMedia.join(', '))}
+              {renderInterestItem("Favorite TV Shows:", profile.profile_data.interests.favoriteTVShows)}
+              {renderInterestItem("Favorite Games:", profile.profile_data.interests.favoriteGames)}
+              {renderInterestItem("Favorite Books:", profile.profile_data.interests.favoriteBooks)}
+              {renderInterestItem("Favorite Quotes:", profile.profile_data.interests.favoriteQuotes)}
+            </>
+          ))}
 
-          <Section title="Contact" icon="📱">
+          {renderSection("Contact", "📱", (
             <Box className="space-y-2">
               {profile.profile_data.contact && (
                 <>
-                  <InfoItem 
-                    label={<EmailIcon fontSize="small" sx={{ color: '#EA4335', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.email} 
-                  />
-                  <Box my={1} />
-                  <InfoItem 
-                    label={<PhoneIcon fontSize="small" sx={{ color: '#34A853', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.phone} 
-                  />
-                  <Box my={1} />
-                  <InfoItem 
-                    label={<FacebookIcon fontSize="small" sx={{ color: '#1877F2', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.facebook} 
-                  />
-                  <Box my={1} />
-                  <InfoItem 
-                    label={<InstagramIcon fontSize="small" sx={{ color: '#E4405F', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.instagram} 
-                  />
-                  <Box my={1} />
-                  <InfoItem 
-                    label={<TwitterIcon fontSize="small" sx={{ color: '#1DA1F2', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.twitter} 
-                  />
-                  <Box my={1} />
-                  <InfoItem 
-                    label={<LinkedInIcon fontSize="small" sx={{ color: '#0A66C2', marginRight: '8px' }} />} 
-                    value={profile.profile_data.contact.linkedin} 
-                  />
+                  {renderInterestItem(<EmailIcon fontSize="small" sx={{ color: '#EA4335', marginRight: '8px' }} />, profile.profile_data.contact.email)}
+                  {renderInterestItem(<PhoneIcon fontSize="small" sx={{ color: '#34A853', marginRight: '8px' }} />, profile.profile_data.contact.phone)}
+                  {renderInterestItem(<FacebookIcon fontSize="small" sx={{ color: '#1877F2', marginRight: '8px' }} />, profile.profile_data.contact.facebook)}
+                  {renderInterestItem(<InstagramIcon fontSize="small" sx={{ color: '#E4405F', marginRight: '8px' }} />, profile.profile_data.contact.instagram)}
+                  {renderInterestItem(<TwitterIcon fontSize="small" sx={{ color: '#1DA1F2', marginRight: '8px' }} />, profile.profile_data.contact.twitter)}
+                  {renderInterestItem(<LinkedInIcon fontSize="small" sx={{ color: '#0A66C2', marginRight: '8px' }} />, profile.profile_data.contact.linkedin)}
                 </>
               )}
             </Box>
-          </Section>
+          ))}
         </Box>
         
         <Box className="flex justify-between mt-8">
