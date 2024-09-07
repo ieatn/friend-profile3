@@ -103,9 +103,10 @@ export default function Form() {
       favoriteRestaurants: 'Olive Garden, Nobu',
       sports: 'Basketball, Tennis',
       accomplishments: 'Ran a marathon, Published a book',
-      spiritualReligious: 'Christian', // Default spiritual/religious views
-      aboutMe: 'I am a passionate individual with a love for learning and exploring new experiences. I enjoy spending time with friends and family, and I am always looking for new opportunities to grow and improve myself.', // Default about me
-      tagline: 'Embrace the journey, not the destination.', // Default tagline
+      spiritualReligious: 'Christian',
+      aboutMe: 'I am a passionate individual with a love for learning and exploring new experiences. I enjoy spending time with friends and family, and I am always looking for new opportunities to grow and improve myself.',
+      tagline: 'Embrace the journey, not the destination.',
+      gender: 'Male', // Added gender field
     });
     setLifestyle({
       occupation: 'Software Developer',
@@ -129,8 +130,50 @@ export default function Form() {
       instagram: 'https://instagram.com/johndoe',
       twitter: 'https://twitter.com/johndoe',
       linkedin: 'https://linkedin.com/in/johndoe',
-      phone: '(555) 123-4567', // Default phone number
-      email: 'johndoe@example.com', // Default email
+      phone: '(555) 123-4567',
+      email: 'johndoe@example.com',
+    });
+  };
+
+  const handleGenerateDefaultFemale = () => {
+    setPersonalInfo({
+      name: 'Jane Smith',
+      age: '28',
+      location: 'San Francisco, CA',
+      relationshipStatus: 'Single',
+      favoriteFood: 'Mexican cuisine, Thai food',
+      favoriteRestaurants: 'La Taqueria, Lers Ros Thai',
+      sports: 'Yoga, Swimming',
+      accomplishments: 'Started a successful startup, Climbed Mount Kilimanjaro',
+      spiritualReligious: 'Buddhist',
+      aboutMe: 'I am an adventurous spirit with a passion for technology and the outdoors. I love challenging myself, whether it\'s in my career or on a mountain trail. Always eager to learn and grow, I believe in making a positive impact on the world.',
+      tagline: 'Innovate, explore, inspire.',
+      gender: 'Female', // Added gender field
+    });
+    setLifestyle({
+      occupation: 'Tech Entrepreneur',
+      values: ['Innovation', 'Sustainability', 'Empathy'],
+      goals: 'Launch a tech product that improves lives, Visit all 7 continents',
+      financialGoals: 'Achieve financial independence, Fund a scholarship program',
+      financialSituation: 'Growing startup, reinvesting profits',
+      favoriteCauses: 'Women in STEM, Ocean conservation',
+    });
+    setInterests({
+      hobbies: ['Coding', 'Rock climbing', 'Meditation'],
+      favoriteActivities: ['Backpacking', 'Attending tech conferences', 'Farmers markets'],
+      favoriteMedia: ['TED Talks', 'Indie films', 'Podcasts'],
+      favoriteTVShows: 'Black Mirror, The Marvelous Mrs. Maisel, Planet Earth',
+      favoriteGames: 'Portal, Civilization, Sudoku',
+      favoriteBooks: 'Lean In by Sheryl Sandberg, Dune by Frank Herbert',
+      favoriteQuotes: '"The future belongs to those who believe in the beauty of their dreams." - Eleanor Roosevelt',
+    });
+    setContact({
+      facebook: 'https://facebook.com/janesmith',
+      instagram: 'https://instagram.com/janesmith',
+      twitter: 'https://twitter.com/janesmith',
+      linkedin: 'https://linkedin.com/in/janesmith',
+      phone: '(415) 555-7890',
+      email: 'janesmith@example.com',
     });
   };
 
@@ -403,7 +446,10 @@ export default function Form() {
             Clear
           </Button>
           <Button variant="outlined" color="primary" onClick={handleGenerateDefault}>
-            Generate Default
+            Generate Default Male
+          </Button>
+          <Button variant="outlined" color="primary" onClick={handleGenerateDefaultFemale}>
+            Generate Default Female
           </Button>
         </div>
 

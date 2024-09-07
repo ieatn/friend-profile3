@@ -47,8 +47,13 @@ export default function Profile() {
   const ProfileCard = ({ profile }) => {
     const [useRealisticPhoto, setUseRealisticPhoto] = useState(false);
 
-    const avatarUrl = `https://api.dicebear.com/6.x/micah/svg?seed=${profile.profile_data.personalInfo.name}`;
-    const realisticPhotoUrl = "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&h=200";
+    const avatarUrl = profile.profile_data.personalInfo.gender === 'Female'
+      ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches
+`
+      : `https://api.dicebear.com/6.x/micah/svg?seed=${profile.profile_data.personalInfo.name}`;
+    const realisticPhotoUrl = profile.profile_data.personalInfo.gender === 'Female'
+      ? "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&h=200"
+      : "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&h=200";
 
     const handleTogglePhoto = () => {
       setUseRealisticPhoto(!useRealisticPhoto);
