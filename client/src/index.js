@@ -13,10 +13,16 @@ import { Auth0Provider } from "@auth0/auth0-react";
 import { domain, clientId } from "./api/Config";
 import 'swiper/css';
 import 'swiper/css/effect-cards';
+import App2 from './App2.jsx';
+import { UserProvider, useUser } from './contexts/UserContext.jsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <App2 />,
+  },
+  {
+    path: "/app",
     element: <App />,
   },
   {
@@ -45,7 +51,9 @@ root.render(
       clientId={clientId}
       redirectUri={window.location.origin}
     >
-      <RouterProvider router={router} />
+      <UserProvider>
+        <RouterProvider router={router} />
+      </UserProvider>
     </Auth0Provider>
   </React.StrictMode>
 );

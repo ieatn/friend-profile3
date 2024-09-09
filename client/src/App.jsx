@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
-import { Box, Typography, Button, CircularProgress, TextField, Chip } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, TextField, Chip, Avatar } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
-
+import { useUser } from './contexts/UserContext';
 
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { currentUserId } = useUser();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchInput, setSearchInput] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [city, setCity] = useState('Seattle');
+  const [city, setCity] = useState('');
   const navigate = useNavigate();
   const [filters, setFilters] = useState({
     single: false,
@@ -23,6 +24,8 @@ function App() {
     travel: false,
     photography: false,
   });
+  const location = useLocation();
+  const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
     const mouseMove = e => {
@@ -39,6 +42,29 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    console.log('currentUserId', currentUserId);
+    const fetchProfileData = async () => {
+      const params = new URLSearchParams(location.search);
+      
+      if (currentUserId) {
+        console.log('currentUserId', currentUserId);
+        try {
+          const response = await axios.get(`${API_URL}/profiles/${currentUserId}`);
+          const parsedProfileData = JSON.parse(response.data.profile_data);
+          setProfileData(parsedProfileData);
+          if (parsedProfileData && parsedProfileData.personalInfo) {
+            setCity(parsedProfileData.personalInfo.location || '');
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, [location, currentUserId]);
+
   const handleSearch = async () => {
     try {
       // Prepare the search parameters
@@ -48,10 +74,16 @@ function App() {
 
       const response = await axios.get(`${API_URL}/profiles/search?${searchParams.toString()}`);
       if (response.data && response.data.length > 0) {
-        const resultsWithDistance = await Promise.all(response.data.map(async (result) => {
+        // have to filter out the current user's profile from the search results, in string format
+        const matchingResult = response.data.find(result => String(result.id) === String(currentUserId));
+        console.log('Matching result:', matchingResult);
+        const filteredResults = response.data.filter(result => String(result.id) !== String(currentUserId));
+        console.log('filteredResults', filteredResults);
+        console.log('Result IDs:', filteredResults.map(result => String(result.id)));
+        const resultsWithDistance = await Promise.all(filteredResults.map(async (result) => {
           const profileData = result.profile_data;
-          const distance = await calculateDistance(city, profileData.personalInfo.location);
-          return { ...result, distance };
+          const distance = await calculateDistance(String(city), String(profileData.personalInfo.location));
+          return { ...result, distance: String(distance) };
         }));
         setSearchResults(resultsWithDistance);
         console.log(resultsWithDistance);
@@ -112,6 +144,21 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
+          {profileData && (
+            <Box className="flex items-center mb-4">
+              <Avatar
+                src={profileData.personalInfo.gender === 'Female'
+                  ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
+                  : `https://api.dicebear.com/6.x/micah/svg?seed=${profileData.personalInfo.name}`
+                }
+                alt={profileData.personalInfo.name}
+                sx={{ width: 60, height: 60, marginRight: 2 }}
+              />
+              <Typography variant="h4" className="font-bold text-gray-800">
+                Hello, {profileData.personalInfo.name}!
+              </Typography>
+            </Box>
+          )}
           <Typography variant="h2" className="font-bold mb-8 text-center text-gray-800">
             Friend Profile Creator
           </Typography>
@@ -131,13 +178,13 @@ function App() {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/profiles" className="w-full">
+                <Link to={`/profile/${currentUserId}`} className="w-full">
                   <Button 
                     variant="outlined" 
                     fullWidth
                     className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
                   >
-                    View Profiles
+                    View My Profile
                   </Button>
                 </Link>
               </motion.div>

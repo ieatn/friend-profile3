@@ -209,11 +209,8 @@ export default function ProfileDetail() {
         </Box>
       </Box>
       <Box className="absolute top-4 right-4 flex gap-2 z-10">
-        <Link to="/">
+        <Link to="/app">
           <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">Home</Button>
-        </Link>
-        <Link to="/profiles">
-          <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">All Profiles</Button>
         </Link>
       </Box>
       {/* <Box className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10 w-64">

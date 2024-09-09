@@ -53,6 +53,26 @@ def get_all_profiles():
         cursor.close()
         conn.close()
 
+# READ: Get a single profile by ID
+@app.route('/profiles/<int:id>', methods=['GET'])
+def get_profile(id):
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM friend_profiles WHERE id = %s", (id,))
+        profile = cursor.fetchone()
+
+        if profile:
+            return jsonify(profile), 200
+        else:
+            return jsonify({'message': 'Profile not found'}), 404
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # CREATE: Insert a new profile
 @app.route('/profiles', methods=['POST'])
@@ -68,26 +88,6 @@ def create_profile():
         conn.commit()
 
         return jsonify({'message': 'Profile created successfully!'}), 201
-    except mysql.connector.Error as err:
-        return jsonify({'error': str(err)}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-# READ: Get a profile by ID
-@app.route('/profiles/<int:id>', methods=['GET'])
-def get_profile(id):
-    try:
-        conn = connection_pool.get_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        cursor.execute("SELECT * FROM friend_profiles WHERE id = %s", (id,))
-        profile = cursor.fetchone()
-
-        if profile:
-            return jsonify(profile), 200
-        else:
-            return jsonify({'message': 'Profile not found!'}), 404
     except mysql.connector.Error as err:
         return jsonify({'error': str(err)}), 500
     finally:
