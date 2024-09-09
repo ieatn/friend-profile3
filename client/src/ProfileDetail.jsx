@@ -216,7 +216,7 @@ export default function ProfileDetail() {
           <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">All Profiles</Button>
         </Link>
       </Box>
-      <Box className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10 w-64">
+      {/* <Box className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10 w-64">
         <TextField
           fullWidth
           variant="outlined"
@@ -267,7 +267,7 @@ export default function ProfileDetail() {
             View Profile
           </Button>
         </Box>
-      )}
+      )} */}
     </Box>
   );
 }

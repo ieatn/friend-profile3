@@ -140,35 +140,88 @@ def delete_profile(id):
         cursor.close()
         conn.close()
 
-# Add this new route for searching profiles
+
+
+
+
+
+
+
+
+
 @app.route('/profiles/search', methods=['GET'])
 def search_profiles():
     try:
         conn = connection_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        keyword = request.args.get('keyword', '').lower()
-        
+        # Get the search keywords from the query parameters, convert them to lowercase, and split into a list
+        keywords = request.args.get('keyword', '').lower().split()
+
+        # Construct the base SQL query
         sql = """
         SELECT id, profile_data
-        FROM friend_profiles 
-        WHERE LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.name')) LIKE %s
-        OR LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.location')) LIKE %s
-        """
-        search_param = f'%{keyword}%'
-        
-        cursor.execute(sql, (search_param, search_param))
-        result = cursor.fetchone()
+        FROM friend_profiles
+        WHERE """
 
-        if result:
-            return jsonify({'id': result['id'], 'profile_data': result['profile_data']}), 200
+        # Build the search conditions using OR to match any keyword
+        conditions = []
+        params = []
+        for keyword in keywords:
+            conditions.append("LOWER(profile_data) LIKE %s")
+            params.append(f'%{keyword}%')
+
+        # Join the conditions using OR to allow any matching keyword
+        sql += " OR ".join(conditions)
+
+        # Execute the query with the prepared parameters
+        cursor.execute(sql, tuple(params))
+        results = cursor.fetchall()
+
+        # If results are found, return them as JSON
+        if results:
+            # Ensure profile_data is valid JSON before sending
+            formatted_results = []
+            for result in results:
+                try:
+                    profile_data = json.loads(result['profile_data'])
+                    formatted_results.append({
+                        'id': result['id'],
+                        'profile_data': profile_data
+                    })
+                except json.JSONDecodeError:
+                    app.logger.error(f"Invalid JSON in profile_data for id {result['id']}")
+                    continue
+
+            return jsonify(formatted_results), 200
         else:
-            return jsonify({'message': 'No matching profile found'}), 404
+            # Return a 404 if no matching profiles are found
+            return jsonify({'message': 'No matching profiles found'}), 404
     except mysql.connector.Error as err:
+        # Handle any SQL errors
         return jsonify({'error': str(err)}), 500
     finally:
+        # Close the cursor and connection
         cursor.close()
         conn.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.route('/api/distance', methods=['GET'])
 def get_distance():

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
-import { Box, Typography, Button, CircularProgress, TextField } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, TextField, Chip } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
@@ -11,10 +11,18 @@ import { API_URL } from './api/Config';
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchResult, setSearchResult] = useState(null);
-  const [city, setCity] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [city, setCity] = useState('Seattle');
   const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    single: false,
+    hiking: false,
+    cooking: false,
+    reading: false,
+    travel: false,
+    photography: false,
+  });
 
   useEffect(() => {
     const mouseMove = e => {
@@ -33,17 +41,26 @@ function App() {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`${API_URL}/profiles/search?keyword=${searchKeyword}`);
-      const profileData = JSON.parse(response.data.profile_data);
-      const distance = await calculateDistance(city, profileData.personalInfo.location);
-      setSearchResult({
-        ...response.data,
-        distance
+      // Prepare the search parameters
+      const searchParams = new URLSearchParams({
+        keyword: searchInput + ' ' + Object.keys(filters).filter(key => filters[key]).join(' ')
       });
-      console.log(profileData.personalInfo.name);
+
+      const response = await axios.get(`${API_URL}/profiles/search?${searchParams.toString()}`);
+      if (response.data && response.data.length > 0) {
+        const resultsWithDistance = await Promise.all(response.data.map(async (result) => {
+          const profileData = result.profile_data;
+          const distance = await calculateDistance(city, profileData.personalInfo.location);
+          return { ...result, distance };
+        }));
+        setSearchResults(resultsWithDistance);
+        console.log(resultsWithDistance);
+      } else {
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error('Error searching profiles:', error);
-      setSearchResult({ message: 'No matching profile found' });
+      setSearchResults([]);
     }
   };
 
@@ -64,6 +81,13 @@ function App() {
 
   const handleViewProfile = (id) => {
     navigate(`/profile/${id}`);
+  };
+
+  const handleFilterToggle = (filterName) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterName]: !prevFilters[filterName]
+    }));
   };
 
   if (isLoading) {
@@ -126,15 +150,14 @@ function App() {
                   onChange={(e) => setCity(e.target.value)}
                   className="bg-white rounded-md mb-4"
                 />
-
-              {/* SEARCHBAR */}
+              {/* SEARCHBAR AND FILTERS */}
               <div className="col-span-1 md:col-span-2">
                 <TextField
                   fullWidth
                   variant="outlined"
-                  placeholder="Search profiles..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="Search profiles (include hobbies and interests)..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSearch();
@@ -142,36 +165,71 @@ function App() {
                   }}
                   className="bg-white rounded-md mb-4"
                 />
-               
+                
+                {/* Filter chips */}
+                <div className="flex flex-wrap gap-2 mt-4 mb-4">
+                  <Chip
+                    label="Single"
+                    onClick={() => handleFilterToggle('single')}
+                    color={filters.single ? 'primary' : 'default'}
+                  />
+                  <Chip
+                    label="Hiking"
+                    onClick={() => handleFilterToggle('hiking')}
+                    color={filters.hiking ? 'primary' : 'default'}
+                  />
+                  <Chip
+                    label="Cooking"
+                    onClick={() => handleFilterToggle('cooking')}
+                    color={filters.cooking ? 'primary' : 'default'}
+                  />
+                  <Chip
+                    label="Reading"
+                    onClick={() => handleFilterToggle('reading')}
+                    color={filters.reading ? 'primary' : 'default'}
+                  />
+                  <Chip
+                    label="Travel"
+                    onClick={() => handleFilterToggle('travel')}
+                    color={filters.travel ? 'primary' : 'default'}
+                  />
+                  <Chip
+                    label="Photography"
+                    onClick={() => handleFilterToggle('photography')}
+                    color={filters.photography ? 'primary' : 'default'}
+                  />
+                </div>
+                
                 <Button
                   onClick={handleSearch}
                   variant="contained"
                   fullWidth
-                  className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out mb-4"
+                  className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out mb-6"
                 >
                   Search
                 </Button>
-                {searchResult && searchResult.id && (
-                  <div className="flex items-center justify-between bg-white p-4 rounded-md mb-4 transition-all duration-300 hover:bg-blue-100">
-                    <Typography variant="body1" className="text-gray-800">
-                      {(() => {
-                        if (searchResult.id) {
-                          const profileData = JSON.parse(searchResult.profile_data);
+                {searchResults.length > 0 ? (
+                  searchResults.map((result) => (
+                    <div key={result.id} className="flex items-center justify-between bg-white p-4 mt-4 rounded-md mb-4 transition-all duration-300 hover:bg-blue-100">
+                      <Typography variant="body1" className="text-gray-800">
+                        {(() => {
+                          const profileData = result.profile_data;
                           const name = profileData?.personalInfo?.name || 'Name not available';
                           const location = profileData?.personalInfo?.location || 'Location not available';
-                          return `${name} - ${location} (${searchResult.distance} away)`;
-                        }
-                        return 'Profile information not available';
-                      })()}
-                    </Typography>
-                    <Button
-                      onClick={() => handleViewProfile(searchResult.id)}
-                      variant="contained"
-                      className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
-                    >
-                      View Profile
-                    </Button>
-                  </div>
+                          return `${name} - ${location} (${result.distance} away)`;
+                        })()}
+                      </Typography>
+                      <Button
+                        onClick={() => handleViewProfile(result.id)}
+                        variant="contained"
+                        className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
+                      >
+                        View Profile
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  searchInput && <Typography variant="body1" className="text-gray-800 mt-4">No matching profiles found</Typography>
                 )}
               </div>
               <motion.div 

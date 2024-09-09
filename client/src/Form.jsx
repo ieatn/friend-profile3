@@ -159,8 +159,8 @@ export default function Form() {
       favoriteCauses: 'Women in STEM, Ocean conservation',
     });
     setInterests({
-      hobbies: ['Coding', 'Rock climbing', 'Meditation'],
-      favoriteActivities: ['Backpacking', 'Attending tech conferences', 'Farmers markets'],
+      hobbies: ['Coding', 'Rock climbing', 'Meditation', 'Cooking'],
+      favoriteActivities: ['Backpacking', 'Attending tech conferences', 'Farmers markets', 'Cooking'],
       favoriteMedia: ['TED Talks', 'Indie films', 'Podcasts'],
       favoriteTVShows: 'Black Mirror, The Marvelous Mrs. Maisel, Planet Earth',
       favoriteGames: 'Portal, Civilization, Sudoku',
