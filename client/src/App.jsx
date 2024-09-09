@@ -9,7 +9,7 @@ import { API_URL } from './api/Config';
 import { useUser } from './contexts/UserContext';
 
 function App() {
-  const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { isLoading, isAuthenticated, loginWithRedirect } = useAuth0();
   const { currentUserId } = useUser();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchInput, setSearchInput] = useState('');
@@ -52,9 +52,11 @@ function App() {
         try {
           const response = await axios.get(`${API_URL}/profiles/${currentUserId}`);
           const parsedProfileData = JSON.parse(response.data.profile_data);
-          setProfileData(parsedProfileData);
-          if (parsedProfileData && parsedProfileData.personalInfo) {
-            setCity(parsedProfileData.personalInfo.location || '');
+          if (parsedProfileData && Object.keys(parsedProfileData).length > 0) {
+            setProfileData(parsedProfileData);
+            if (parsedProfileData.personalInfo) {
+              setCity(parsedProfileData.personalInfo.location || '');
+            }
           }
         } catch (error) {
           console.error('Error fetching profile:', error);
@@ -178,15 +180,22 @@ function App() {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to={`/profile/${currentUserId}`} className="w-full">
-                  <Button 
-                    variant="outlined" 
-                    fullWidth
-                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
-                  >
-                    View My Profile
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outlined" 
+                  fullWidth
+                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
+                  onClick={() => {
+                    if (!profileData || Object.keys(profileData).length === 0) {
+                      alert("No profiles available.");
+                    } else {
+                      navigate(`/profile/${currentUserId}`);
+                      // Navigate to profile view or perform other action
+                      // For example: navigate(`/profile/${currentUserId}`);
+                    }
+                  }}
+                >
+                  View My Profile
+                </Button>
               </motion.div>
 
               <TextField
@@ -285,7 +294,7 @@ function App() {
                 className="fixed top-4 right-4 z-50"
               >
                 <Button
-                  onClick={() => logout()}
+                  onClick={() => navigate('/')}
                   variant="text"
                   className="text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out"
                 >

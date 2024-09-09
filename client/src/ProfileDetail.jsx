@@ -10,13 +10,13 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
+import { useUser } from './contexts/UserContext';
 
 export default function ProfileDetail() {
-  const { id } = useParams();
+  const { id } = useParams(); // Get the profile ID from the URL
   const [profile, setProfile] = useState(null);
   const [useRealisticPhoto, setUseRealisticPhoto] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchResult, setSearchResult] = useState(null);
+
   const navigate = useNavigate();
 
   const renderInterestItem = (label, value) => {
@@ -56,7 +56,7 @@ export default function ProfileDetail() {
     };
 
     fetchProfile();
-  }, [id]);
+  }, [id]); // Add id as a dependency
 
   if (!profile) return <Typography>Loading...</Typography>;
 
@@ -71,21 +71,8 @@ export default function ProfileDetail() {
     setUseRealisticPhoto(!useRealisticPhoto);
   };
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/profiles/search?keyword=${searchKeyword}`);
-      setSearchResult(response.data);
-      const profileData = JSON.parse(response.data.profile_data);
-      console.log(profileData.personalInfo.name);
-      setSearchKeyword(''); // Clear the search field after successful search
-    } catch (error) {
-      console.error('Error searching profiles:', error);
-      setSearchResult({ message: 'No matching profile found' });
-    }
-  };
-
-  const handleViewProfile = (id) => {
-    navigate(`/profile/${id}`);
+  const handleViewProfile = (currentUserId) => {
+    navigate(`/profile/${currentUserId}`);
   };
 
   return (
@@ -213,58 +200,6 @@ export default function ProfileDetail() {
           <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">Home</Button>
         </Link>
       </Box>
-      {/* <Box className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10 w-64">
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search profiles..."
-          value={searchKeyword}
-          onChange={(e) => setSearchKeyword(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch();
-            }
-          }}
-          className="bg-white rounded-md mb-4"
-          size="small"
-        />
-        <Button
-          onClick={handleSearch}
-          variant="contained"
-          className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
-          size="small"
-        >
-          Search
-        </Button>
-      </Box>
-      {searchResult && searchResult.id && (
-        <Box className="absolute top-16 left-1/2 transform -translate-x-1/2 z-10 w-64 bg-white p-4 rounded-md shadow-md">
-          <Typography variant="body2" className="text-gray-800 mb-2">
-            {(() => {
-              if (searchResult.id) {
-                const profileData = JSON.parse(searchResult.profile_data);
-                const name = profileData?.personalInfo?.name || 'Name not available';
-                const location = profileData?.personalInfo?.location || 'Location not available';
-                return `${name} - ${location}`;
-              }
-              return 'Profile information not available';
-            })()}
-          </Typography>
-          <Button
-            onClick={() => {
-              handleViewProfile(searchResult.id);
-              setSearchResult(null);
-              setSearchKeyword('');
-            }}
-            variant="contained"
-            fullWidth
-            className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
-            size="small"
-          >
-            View Profile
-          </Button>
-        </Box>
-      )} */}
     </Box>
   );
 }

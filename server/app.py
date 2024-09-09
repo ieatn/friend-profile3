@@ -5,6 +5,7 @@ import os
 import json
 from flask_cors import CORS
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # debugging
 import requests
@@ -252,6 +253,73 @@ def get_distance():
     except Exception as e:
         app.logger.error(f"An unexpected error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor()
+
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({'success': False, 'message': 'Username and password are required'}), 400
+
+        # Check if username already exists
+        cursor.execute("SELECT id FROM friend_profiles WHERE username = %s", (username,))
+        if cursor.fetchone():
+            return jsonify({'success': False, 'message': 'Username already exists'}), 409
+
+        # Hash the password
+        hashed_password = generate_password_hash(password)
+
+        # Insert new user
+        cursor.execute(
+            "INSERT INTO friend_profiles (username, password, profile_data) VALUES (%s, %s, %s)",
+            (username, hashed_password, '{}')
+        )
+        conn.commit()
+
+        # Get the new user's ID
+        new_user_id = cursor.lastrowid
+
+        return jsonify({'success': True, 'message': 'User created successfully', 'userId': new_user_id}), 201
+
+    except mysql.connector.Error as err:
+        return jsonify({'success': False, 'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            return jsonify({'success': False, 'message': 'Username and password are required'}), 400
+
+        # Fetch user
+        cursor.execute("SELECT id, password FROM friend_profiles WHERE username = %s", (username,))
+        user = cursor.fetchone()
+
+        if user and check_password_hash(user['password'], password):
+            return jsonify({'success': True, 'message': 'Login successful', 'userId': user['id']}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
+
+    except mysql.connector.Error as err:
+        return jsonify({'success': False, 'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)

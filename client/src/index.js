@@ -24,7 +24,7 @@ const router = createBrowserRouter([
   {
     path: "/app",
     element: <App />,
-  },
+  }, 
   {
     path: "/form/:id?", // Dynamic route with optional `id` parameter
     element: <Form />,

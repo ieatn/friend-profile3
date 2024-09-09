@@ -1,14 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
 import { Button, TextField, InputLabel, MenuItem, Select, FormControl, Chip } from '@mui/material';
 import axios from 'axios';
 import { API_URL } from './api/Config';
+import { useUser } from './contexts/UserContext';
 
 export default function Form() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth0();
+  const { currentUserId } = useUser();
+
+
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    console.log('currentUserId', currentUserId);
+    const fetchProfileData = async () => {
+      
+      if (currentUserId) {
+        console.log('currentUserId', currentUserId);
+        try {
+          const response = await axios.get(`${API_URL}/profiles/${currentUserId}`);
+          const parsedProfileData = JSON.parse(response.data.profile_data);
+          if (parsedProfileData && Object.keys(parsedProfileData).length > 0) {
+            setProfileData(parsedProfileData);
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, [currentUserId]);
 
   const [personalInfo, setPersonalInfo] = useState({
     name: '',
@@ -19,9 +44,9 @@ export default function Form() {
     favoriteRestaurants: '',
     sports: '',
     accomplishments: '',
-    spiritualReligious: '', // New field
-    aboutMe: '', // New field
-    tagline: '', // New field
+    spiritualReligious: '',
+    aboutMe: '',
+    tagline: '',
   });
 
   const [lifestyle, setLifestyle] = useState({
@@ -48,28 +73,15 @@ export default function Form() {
     instagram: '',
     twitter: '',
     linkedin: '',
-    phone: '', // New field
-    email: '', // New field
+    phone: '',
+    email: '',
   });
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (id) {
+      if (currentUserId) {
         try {
-          const response = await axios.get(`${API_URL}/profiles/${id}`);
-          const profile = response.data;
-          const profileData = JSON.parse(profile.profile_data);
-          setPersonalInfo(profileData.personalInfo);
-          setLifestyle(profileData.lifestyle);
-          setInterests(profileData.interests);
-          setContact(profileData.contact);
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-        }
-      } else if (user) {
-        // If no id, try to get the user's profile
-        try {
-          const response = await axios.get(`${API_URL}/profiles/user/${user.sub}`);
+          const response = await axios.get(`${API_URL}/profiles/user/${currentUserId}`);
           if (response.data) {
             const profileData = JSON.parse(response.data.profile_data);
             setPersonalInfo(profileData.personalInfo);
@@ -84,7 +96,7 @@ export default function Form() {
     };
 
     fetchProfile();
-  }, [id, user]);
+  }, [currentUserId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,16 +108,17 @@ export default function Form() {
     });
 
     try {
-      if (id) {
-        await axios.put(`${API_URL}/profiles/${id}`, { profile_data: profileData });
+      if (currentUserId) {
+        await axios.put(`${API_URL}/profiles/${currentUserId}`, { profile_data: profileData });
       } else {
         const response = await axios.post(`${API_URL}/profiles`, { 
           profile_data: profileData,
-          user_id: user.sub // Include the user's Auth0 ID when creating a new profile
+          user_id: user.sub
         });
-        id = response.data.id; // Get the new profile ID
+        // Note: This line is not needed as currentUserId is from useUser hook
+        // currentUserId = response.data.id;
       }
-      navigate(`/profile/${id}`);
+      navigate(`/profile/${currentUserId}`);
     } catch (error) {
       console.error('Error saving profile:', error);
     }
@@ -131,7 +144,7 @@ export default function Form() {
       spiritualReligious: 'Christian',
       aboutMe: 'I am a passionate individual with a love for learning and exploring new experiences. I enjoy spending time with friends and family, and I am always looking for new opportunities to grow and improve myself.',
       tagline: 'Embrace the journey, not the destination.',
-      gender: 'Male', // Added gender field
+      gender: 'Male',
     });
     setLifestyle({
       occupation: 'Software Developer',
@@ -173,7 +186,7 @@ export default function Form() {
       spiritualReligious: 'Buddhist',
       aboutMe: 'I am an adventurous spirit with a passion for technology and the outdoors. I love challenging myself, whether it\'s in my career or on a mountain trail. Always eager to learn and grow, I believe in making a positive impact on the world.',
       tagline: 'Innovate, explore, inspire.',
-      gender: 'Female', // Added gender field
+      gender: 'Female',
     });
     setLifestyle({
       occupation: 'Tech Entrepreneur',
@@ -204,7 +217,7 @@ export default function Form() {
 
   return (
     <div className="border w-3/4 mx-auto flex flex-col items-center justify-center min-h-screen py-12">
-      <h1 className="text-3xl mb-8">{id ? 'Edit' : 'Create'} Your Friend Profile</h1>
+      <h1 className="text-3xl mb-8">{currentUserId ? 'Edit' : 'Create'} Your Friend Profile</h1>
       <form onSubmit={handleSubmit} className="w-full max-w-2xl">
         <div className="mb-8">
           <h2 className="text-xl mb-4">Personal Information</h2>
@@ -480,7 +493,7 @@ export default function Form() {
 
         <div className="flex justify-center mt-8">
           <Button variant="contained" color="primary" type="submit" size="large">
-            {id ? 'Update Profile' : 'Create Profile'}
+            {!profileData || Object.keys(profileData).length === 0 ? 'Create Profile' : 'Update Profile'}
           </Button>
         </div>
       </form>
@@ -489,10 +502,19 @@ export default function Form() {
         <Link to="/app">
           <Button variant="contained">Home</Button>
         </Link>
-        {id && (
-          <Link to={`/profile/${id}`}>
-            <Button variant="outlined">Your Profile</Button>
-          </Link>
+        {currentUserId && (
+          <Button 
+            variant="outlined" 
+            onClick={() => {
+              if (!profileData || Object.keys(profileData).length === 0) {
+                alert("No profile available.");
+              } else {
+                navigate(`/profile/${currentUserId}`);
+              }
+            }}
+          >
+            Your Profile
+          </Button>
         )}
       </div>
     </div>

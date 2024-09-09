@@ -12,4 +12,9 @@ use circlesdb;
 --     }'
 -- );
 -- truncate friend_profiles;
+
+-- ALTER TABLE friend_profiles
+-- ADD COLUMN username VARCHAR(255),
+-- ADD COLUMN password VARCHAR(255);
+-- TRUNCATE TABLE friend_profiles;
 select * from friend_profiles;

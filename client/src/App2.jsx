@@ -9,6 +9,9 @@ import { UserProvider, useUser } from './contexts/UserContext';
 
 function App2Content() {
   const [profileIds, setProfileIds] = useState([]);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { isLoading, isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
   const { currentUserId, setCurrentUserId } = useUser();
@@ -34,6 +37,23 @@ function App2Content() {
     setCurrentUserId(currentUserId);
     if (currentUserId) {
       navigate(`/app?id=${currentUserId}`);
+    }
+  };
+
+  const handleUsernamePasswordSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const endpoint = isSignUp ? `${API_URL}/signup` : `${API_URL}/login`;
+      const response = await axios.post(endpoint, { username, password });
+      if (response.data.success) {
+        setCurrentUserId(response.data.userId);
+        navigate(`/app?id=${response.data.userId}`);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
     }
   };
 
@@ -64,7 +84,7 @@ function App2Content() {
               fullWidth
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              Log In / Sign Up
+              Log In / Sign Up with Auth0
             </Button>
           </>
         ) : (
@@ -80,13 +100,22 @@ function App2Content() {
               </Typography>
             </Box>
             <Typography variant="h6" gutterBottom className="text-center text-gray-700">
-              Enter Profile ID
+              {isSignUp ? 'Sign Up' : 'Log In'} with Username and Password
             </Typography>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleUsernamePasswordSubmit} className="space-y-4">
               <TextField
-                value={currentUserId}
-                onChange={(e) => setCurrentUserId(e.target.value)}
-                label="Profile ID"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                label="Username"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                label="Password"
+                type="password"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -97,26 +126,35 @@ function App2Content() {
                 fullWidth
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
-                Go to App
+                {isSignUp ? 'Sign Up' : 'Log In'}
               </Button>
             </form>
+            <Button
+              onClick={() => setIsSignUp(!isSignUp)}
+              variant="text"
+              fullWidth
+              className="mt-2 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded"
+            >
+              {isSignUp ? 'Already have an account? Log In' : 'Don\'t have an account? Sign Up'}
+            </Button>
             {profileIds.length > 0 && (
               <Typography variant="body2" className="mt-4 text-gray-600">
                 Available Profile IDs: {profileIds.join(', ')}
               </Typography>
             )}
-            <Button
-              onClick={() => logout({ returnTo: window.location.origin })}
-              variant="outlined"
-              fullWidth
-              className="mt-4 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded border-blue-600"
-            >
-              Log Out
-            </Button>
+         
           </>
         )}
       </motion.div>
+      <Button
+        onClick={() => logout({ returnTo: window.location.origin })}
+        variant="outlined"
+        className="fixed top-4 right-4 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded border-blue-600 z-50"
+      >
+        Log Out
+      </Button>
     </Box>
+    
   );
 }
 
