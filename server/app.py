@@ -24,6 +24,9 @@ connection_pool = pooling.MySQLConnectionPool(
     database=db_database
 )
 
+# Initialize LangChain components
+openai_api_key = os.getenv('OPENAI_API_KEY')
+
 @app.route('/')
 def hello_world():
     return "Hello, World!"
@@ -126,6 +129,36 @@ def delete_profile(id):
             return jsonify({'message': 'Profile not found!'}), 404
         else:
             return jsonify({'message': 'Profile deleted successfully!'}), 200
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Add this new route for searching profiles
+@app.route('/profiles/search', methods=['GET'])
+def search_profiles():
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        keyword = request.args.get('keyword', '').lower()
+        
+        sql = """
+        SELECT id
+        FROM friend_profiles 
+        WHERE LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.name')) LIKE %s
+        OR LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.location')) LIKE %s
+        """
+        search_param = f'%{keyword}%'
+        
+        cursor.execute(sql, (search_param, search_param))
+        result = cursor.fetchone()
+
+        if result:
+            return jsonify({'id': result['id']}), 200
+        else:
+            return jsonify({'message': 'No matching profile found'}), 404
     except mysql.connector.Error as err:
         return jsonify({'error': str(err)}), 500
     finally:
