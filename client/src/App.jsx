@@ -7,11 +7,13 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
 
+
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResult, setSearchResult] = useState(null);
+  const [city, setCity] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,10 +34,31 @@ function App() {
   const handleSearch = async () => {
     try {
       const response = await axios.get(`${API_URL}/profiles/search?keyword=${searchKeyword}`);
-      setSearchResult(response.data);
+      const profileData = JSON.parse(response.data.profile_data);
+      const distance = await calculateDistance(city, profileData.personalInfo.location);
+      setSearchResult({
+        ...response.data,
+        distance
+      });
+      console.log(profileData.personalInfo.name);
     } catch (error) {
       console.error('Error searching profiles:', error);
       setSearchResult({ message: 'No matching profile found' });
+    }
+  };
+
+  const calculateDistance = async (fromCity, toLocation) => {
+    try {
+      const response = await axios.get(`/api/distance?origins=${fromCity}&destinations=${toLocation}`);
+      if (response.data && response.data.rows && response.data.rows[0].elements) {
+        return response.data.rows[0].elements[0].distance.text;
+      } else {
+        console.error('Unexpected response format:', response.data);
+        return 'Distance unavailable';
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error.response ? error.response.data : error.message);
+      return 'Distance unavailable';
     }
   };
 
@@ -84,7 +107,7 @@ function App() {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/profile" className="w-full">
+                <Link to="/profiles" className="w-full">
                   <Button 
                     variant="outlined" 
                     fullWidth
@@ -94,6 +117,17 @@ function App() {
                   </Button>
                 </Link>
               </motion.div>
+
+              <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Enter your city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="bg-white rounded-md mb-4"
+                />
+
+              {/* SEARCHBAR */}
               <div className="col-span-1 md:col-span-2">
                 <TextField
                   fullWidth
@@ -101,8 +135,14 @@ function App() {
                   placeholder="Search profiles..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
                   className="bg-white rounded-md mb-4"
                 />
+               
                 <Button
                   onClick={handleSearch}
                   variant="contained"
@@ -111,33 +151,38 @@ function App() {
                 >
                   Search
                 </Button>
-                {searchResult && (
-                  <div className="text-center mb-4">
-                    <Typography variant="body1" className="text-gray-800 mb-2">
-                      {searchResult.id ? `Profile found with ID: ${searchResult.id}` : searchResult.message}
+                {searchResult && searchResult.id && (
+                  <div className="flex items-center justify-between bg-white p-4 rounded-md mb-4 transition-all duration-300 hover:bg-blue-100">
+                    <Typography variant="body1" className="text-gray-800">
+                      {(() => {
+                        if (searchResult.id) {
+                          const profileData = JSON.parse(searchResult.profile_data);
+                          const name = profileData?.personalInfo?.name || 'Name not available';
+                          const location = profileData?.personalInfo?.location || 'Location not available';
+                          return `${name} - ${location} (${searchResult.distance} away)`;
+                        }
+                        return 'Profile information not available';
+                      })()}
                     </Typography>
-                    {searchResult.id && (
-                      <Button
-                        onClick={() => handleViewProfile(searchResult.id)}
-                        variant="contained"
-                        className="bg-green-600 text-white hover:bg-green-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
-                      >
-                        View Profile
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => handleViewProfile(searchResult.id)}
+                      variant="contained"
+                      className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
+                    >
+                      View Profile
+                    </Button>
                   </div>
                 )}
               </div>
               <motion.div 
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
-                className="col-span-1 md:col-span-2"
+                className="fixed top-4 right-4 z-50"
               >
                 <Button
                   onClick={() => logout()}
                   variant="text"
-                  fullWidth
-                  className="text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out"
+                  className="text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out"
                 >
                   Log Out
                 </Button>

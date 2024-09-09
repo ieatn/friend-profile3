@@ -6,6 +6,11 @@ import json
 from flask_cors import CORS
 from dotenv import load_dotenv
 
+# debugging
+import requests
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
@@ -145,7 +150,7 @@ def search_profiles():
         keyword = request.args.get('keyword', '').lower()
         
         sql = """
-        SELECT id
+        SELECT id, profile_data
         FROM friend_profiles 
         WHERE LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.name')) LIKE %s
         OR LOWER(JSON_EXTRACT(profile_data, '$.personalInfo.location')) LIKE %s
@@ -156,7 +161,7 @@ def search_profiles():
         result = cursor.fetchone()
 
         if result:
-            return jsonify({'id': result['id']}), 200
+            return jsonify({'id': result['id'], 'profile_data': result['profile_data']}), 200
         else:
             return jsonify({'message': 'No matching profile found'}), 404
     except mysql.connector.Error as err:
@@ -164,6 +169,36 @@ def search_profiles():
     finally:
         cursor.close()
         conn.close()
+
+@app.route('/api/distance', methods=['GET'])
+def get_distance():
+    try:
+        origins = request.args.get('origins')
+        destinations = request.args.get('destinations')
+        api_key = os.environ.get('GOOGLE_MAPS_API_KEY')
+        print(f"Google Maps API Key: {os.environ.get('GOOGLE_MAPS_API_KEY')}")
+        
+        if not api_key:
+            app.logger.error("Google Maps API key is not set")
+            return jsonify({"error": "API key is not configured"}), 500
+        
+        url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origins}&destinations={destinations}&key={api_key}"
+        
+        app.logger.debug(f"Requesting URL: {url}")
+        
+        response = requests.get(url)
+        response.raise_for_status()  # This will raise an exception for HTTP errors
+        
+        data = response.json()
+        app.logger.debug(f"Received data: {data}")
+        
+        return jsonify(data)
+    except requests.RequestException as e:
+        app.logger.error(f"Request to Google Maps API failed: {str(e)}")
+        return jsonify({"error": "Failed to fetch data from Google Maps API"}), 500
+    except Exception as e:
+        app.logger.error(f"An unexpected error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

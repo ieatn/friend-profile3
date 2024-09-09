@@ -80,7 +80,7 @@ export default function Form() {
       } else {
         await axios.post(`${API_URL}/profiles`, { profile_data: profileData });
       }
-      navigate('/profile');
+      navigate('/profiles');
     } catch (error) {
       console.error('Error saving profile:', error);
     }
@@ -460,11 +460,11 @@ export default function Form() {
         </div>
       </form>
       
-      <div className="mt-8 space-x-4">
+      <div className="fixed top-4 right-4 space-x-4">
         <Link to="/">
           <Button variant="contained">Home</Button>
         </Link>
-        <Link to="/profile">
+        <Link to="/profiles">
           <Button variant="outlined">Your Profiles</Button>
         </Link>
       </div>
