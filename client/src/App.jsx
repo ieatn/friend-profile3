@@ -174,7 +174,7 @@ function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Box className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Link to="/form" className="w-full">
                     <Button 
@@ -201,6 +201,17 @@ function App() {
                   >
                     View My Profile
                   </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/profiles" className="w-full">
+                    <Button 
+                      variant="contained" 
+                      fullWidth
+                      className="bg-green-600 text-white hover:bg-green-700 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
+                    >
+                      View All Profiles
+                    </Button>
+                  </Link>
                 </motion.div>
               </Box>
 

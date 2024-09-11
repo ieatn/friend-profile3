@@ -94,27 +94,35 @@ def create_profile():
     finally:
         cursor.close()
         conn.close()
-
 # UPDATE: Update a profile by ID
 @app.route('/profiles/<int:id>', methods=['PUT'])
 def update_profile(id):
     try:
         conn = connection_pool.get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        profile_data = request.json.get('profile_data')
+        # Fetch the existing profile data
+        cursor.execute("SELECT profile_data FROM friend_profiles WHERE id = %s", (id,))
+        existing_profile = cursor.fetchone()
 
+        if not existing_profile:
+            return jsonify({'message': 'Profile not found!'}), 404
+
+        new_profile_data = request.json.get('profile_data')
+
+        # Compare the existing and new profile data
+        if existing_profile['profile_data'] == new_profile_data:
+            return jsonify({'message': 'No changes detected'}), 200
+
+        # If there are changes, update the profile
         cursor.execute(
             "UPDATE friend_profiles SET profile_data = %s WHERE id = %s",
-            (profile_data, id)  # No need to use json.dumps here
+            (new_profile_data, id)
         )
         
         conn.commit()
 
-        if cursor.rowcount == 0:
-            return jsonify({'message': 'Profile not found!'}), 404
-        else:
-            return jsonify({'message': 'Profile updated successfully!'}), 200
+        return jsonify({'message': 'Profile updated successfully!'}), 200
     except mysql.connector.Error as err:
         return jsonify({'error': str(err)}), 500
     finally:

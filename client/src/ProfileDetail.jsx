@@ -199,6 +199,7 @@ export default function ProfileDetail() {
         <Link to="/app">
           <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">Home</Button>
         </Link>
+        <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm" onClick={() => navigate(`/form/${id}`)}>Edit</Button>
       </Box>
     </Box>
   );
