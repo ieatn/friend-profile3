@@ -3,7 +3,7 @@ import './App.css';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0 } from "@auth0/auth0-react";
 import { Box, Typography, Button, CircularProgress, TextField, Chip, Avatar } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
 import { useUser } from './contexts/UserContext';
@@ -133,11 +133,11 @@ function App() {
   }
 
   return (
-    <Box className="relative min-h-screen overflow-hidden bg-gray-100">
+    <Box className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
       <motion.div
         className="absolute inset-0 z-0"
         animate={{
-          background: `radial-gradient(600px at ${mousePosition.x}px ${mousePosition.y}px, rgba(200, 200, 200, 0.15), transparent 80%)`
+          background: `radial-gradient(600px at ${mousePosition.x}px ${mousePosition.y}px, rgba(200, 200, 255, 0.2), transparent 80%)`
         }}
       />
       <Box className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8">
@@ -145,69 +145,74 @@ function App() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
+          className="mb-12"
         >
           {profileData && (
-            <Box className="flex items-center mb-4">
+            <Box className="flex items-center mb-6">
               <Avatar
                 src={profileData.personalInfo.gender === 'Female'
                   ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
                   : `https://api.dicebear.com/6.x/micah/svg?seed=${profileData.personalInfo.name}`
                 }
                 alt={profileData.personalInfo.name}
-                sx={{ width: 60, height: 60, marginRight: 2 }}
+                sx={{ width: 80, height: 80, marginRight: 3 }}
               />
-              <Typography variant="h4" className="font-bold text-gray-800">
+              <Typography variant="h3" className="font-bold text-gray-800">
                 Hello, {profileData.personalInfo.name}!
               </Typography>
             </Box>
           )}
-          <Typography variant="h2" className="font-bold mb-8 text-center text-gray-800">
+          <Typography variant="h1" className="font-bold text-center text-gray-800 text-4xl md:text-5xl lg:text-6xl">
             Friend Profile Creator
           </Typography>
         </motion.div>
-        <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
+        
+        <Box className="w-full max-w-4xl">
           {isAuthenticated ? (
-            <>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/form" className="w-full">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/form" className="w-full">
+                    <Button 
+                      variant="contained" 
+                      fullWidth
+                      className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
+                    >
+                      Create Profile
+                    </Button>
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button 
-                    variant="contained" 
+                    variant="outlined" 
                     fullWidth
-                    className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
+                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
+                    onClick={() => {
+                      if (!profileData || Object.keys(profileData).length === 0) {
+                        alert("No profiles available.");
+                      } else {
+                        navigate(`/profile/${currentUserId}`);
+                      }
+                    }}
                   >
-                    Create Profile
+                    View My Profile
                   </Button>
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  variant="outlined" 
-                  fullWidth
-                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
-                  onClick={() => {
-                    if (!profileData || Object.keys(profileData).length === 0) {
-                      alert("No profiles available.");
-                    } else {
-                      navigate(`/profile/${currentUserId}`);
-                      // Navigate to profile view or perform other action
-                      // For example: navigate(`/profile/${currentUserId}`);
-                    }
-                  }}
-                >
-                  View My Profile
-                </Button>
-              </motion.div>
+                </motion.div>
+              </Box>
 
-              <TextField
+              <Box className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <TextField
                   fullWidth
                   variant="outlined"
                   placeholder="Enter your city"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="bg-white rounded-md mb-4"
+                  className="mb-4"
                 />
-              {/* SEARCHBAR AND FILTERS */}
-              <div className="col-span-1 md:col-span-2">
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -219,100 +224,85 @@ function App() {
                       handleSearch();
                     }
                   }}
-                  className="bg-white rounded-md mb-4"
+                  className="mb-4"
                 />
                 
-                {/* Filter chips */}
-                <div className="flex flex-wrap gap-2 mt-4 mb-4">
-                  <Chip
-                    label="Single"
-                    onClick={() => handleFilterToggle('single')}
-                    color={filters.single ? 'primary' : 'default'}
-                  />
-                  <Chip
-                    label="Hiking"
-                    onClick={() => handleFilterToggle('hiking')}
-                    color={filters.hiking ? 'primary' : 'default'}
-                  />
-                  <Chip
-                    label="Cooking"
-                    onClick={() => handleFilterToggle('cooking')}
-                    color={filters.cooking ? 'primary' : 'default'}
-                  />
-                  <Chip
-                    label="Reading"
-                    onClick={() => handleFilterToggle('reading')}
-                    color={filters.reading ? 'primary' : 'default'}
-                  />
-                  <Chip
-                    label="Travel"
-                    onClick={() => handleFilterToggle('travel')}
-                    color={filters.travel ? 'primary' : 'default'}
-                  />
-                  <Chip
-                    label="Photography"
-                    onClick={() => handleFilterToggle('photography')}
-                    color={filters.photography ? 'primary' : 'default'}
-                  />
-                </div>
+                <Box className="flex flex-wrap gap-2 mt-4 mb-4">
+                  {['single', 'hiking', 'cooking', 'reading', 'travel', 'photography'].map((filter) => (
+                    <Chip
+                      key={filter}
+                      label={filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      onClick={() => handleFilterToggle(filter)}
+                      color={filters[filter] ? 'primary' : 'default'}
+                      className="transition-all duration-300"
+                    />
+                  ))}
+                </Box>
                 
                 <Button
                   onClick={handleSearch}
                   variant="contained"
                   fullWidth
-                  className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out mb-6"
+                  className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out"
                 >
                   Search
                 </Button>
-                {searchResults.length > 0 ? (
-                  searchResults.map((result) => (
-                    <div key={result.id} className="flex items-center justify-between bg-white p-4 mt-4 rounded-md mb-4 transition-all duration-300 hover:bg-blue-100">
-                      <Typography variant="body1" className="text-gray-800">
-                        {(() => {
-                          const profileData = result.profile_data;
-                          const name = profileData?.personalInfo?.name || 'Name not available';
-                          const location = profileData?.personalInfo?.location || 'Location not available';
-                          return `${name} - ${location} (${result.distance} away)`;
-                        })()}
-                      </Typography>
-                      <Button
-                        onClick={() => handleViewProfile(result.id)}
-                        variant="contained"
-                        className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
+              </Box>
+
+              <AnimatePresence>
+                {searchResults.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {searchResults.map((result, index) => (
+                      <motion.div
+                        key={result.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="flex items-center justify-between bg-white p-4 rounded-lg mb-4 shadow-md transition-all duration-300 hover:shadow-lg"
                       >
-                        View Profile
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  searchInput && <Typography variant="body1" className="text-gray-800 mt-4">No matching profiles found</Typography>
+                        <Typography variant="body1" className="text-gray-800">
+                          {(() => {
+                            const profileData = result.profile_data;
+                            const name = profileData?.personalInfo?.name || 'Name not available';
+                            const location = profileData?.personalInfo?.location || 'Location not available';
+                            return `${name} - ${location} (${result.distance} away)`;
+                          })()}
+                        </Typography>
+                        <Button
+                          onClick={() => handleViewProfile(result.id)}
+                          variant="contained"
+                          className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
+                        >
+                          View Profile
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
                 )}
-              </div>
-              <motion.div 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-                className="fixed top-4 right-4 z-50"
-              >
-                <Button
-                  onClick={() => navigate('/')}
-                  variant="text"
-                  className="text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out"
-                >
-                  Log Out
-                </Button>
-              </motion.div>
-            </>
+              </AnimatePresence>
+              
+              {searchInput && searchResults.length === 0 && (
+                <Typography variant="body1" className="text-gray-800 mt-4 text-center">
+                  No matching profiles found
+                </Typography>
+              )}
+            </motion.div>
           ) : (
             <motion.div 
               whileHover={{ scale: 1.05 }} 
               whileTap={{ scale: 0.95 }}
-              className="col-span-1 md:col-span-2"
+              className="w-full"
             >
               <Button
                 onClick={() => loginWithRedirect()}
                 variant="contained"
                 fullWidth
-                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
+                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out text-xl"
               >
                 Log In to Get Started
               </Button>
@@ -320,8 +310,26 @@ function App() {
           )}
         </Box>
       </Box>
+      
       <motion.div
-        className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-200 to-transparent"
+        className="fixed top-4 right-4 z-50"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
+        {isAuthenticated && (
+          <Button
+            onClick={() => navigate('/')}
+            variant="text"
+            className="text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out"
+          >
+            Log Out
+          </Button>
+        )}
+      </motion.div>
+
+      <motion.div
+        className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-indigo-200 to-transparent"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 1 }}

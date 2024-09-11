@@ -146,13 +146,15 @@ function App2Content() {
           </>
         )}
       </motion.div>
-      <Button
-        onClick={() => logout({ returnTo: window.location.origin })}
-        variant="outlined"
-        className="fixed top-4 right-4 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded border-blue-600 z-50"
-      >
-        Log Out
-      </Button>
+      {isAuthenticated && (
+        <Button
+          onClick={() => logout({ returnTo: window.location.origin })}
+          variant="outlined"
+          className="fixed top-4 right-4 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded border-blue-600 z-50"
+        >
+          Log Out
+        </Button>
+      )}
     </Box>
     
   );
