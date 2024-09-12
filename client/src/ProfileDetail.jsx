@@ -13,7 +13,15 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import { useUser } from './contexts/UserContext';
 
 export default function ProfileDetail() {
-  const { id } = useParams(); // Get the profile ID from the URL
+  // debugging
+  // for params to work, must use the right term, ill call it newId
+  // actually this doesnt even fucking work, maybe its stuck at id because of the route in index.js
+  const params = useParams();
+  console.log(params)
+  const { id } = params;
+  const { currentUserId } = useUser();
+  console.log(id)
+  const isCurrentUser = id === currentUserId;
   const [profile, setProfile] = useState(null);
   const [useRealisticPhoto, setUseRealisticPhoto] = useState(false);
 
@@ -56,7 +64,7 @@ export default function ProfileDetail() {
     };
 
     fetchProfile();
-  }, [id]); // Add id as a dependency
+  }, [id, currentUserId]); // Add id as a dependency
 
   if (!profile) return <Typography>Loading...</Typography>;
 
@@ -73,6 +81,18 @@ export default function ProfileDetail() {
 
   const handleViewProfile = (currentUserId) => {
     navigate(`/profile/${currentUserId}`);
+  };
+
+
+  const handleDelete = async (unique_id) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this profile?");
+    if (isConfirmed) {
+      try {
+        await axios.delete(`${API_URL}/profiles/${unique_id}`);
+      } catch (error) {
+        console.error('Error deleting profile:', error);
+      }
+    }
   };
 
   return (
@@ -192,14 +212,19 @@ export default function ProfileDetail() {
               )}
             </Box>
           ))}
-        </Box>
+          </Box>
         </Box>
       </Box>
       <Box className="absolute top-4 right-4 flex gap-2 z-10">
         <Link to="/app">
           <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">Home</Button>
         </Link>
-        <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm" onClick={() => navigate(`/form/${id}`)}>Edit</Button>
+        {isCurrentUser && (
+          <>
+            <Button variant="contained" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm" onClick={() => navigate(`/form/${currentUserId}`)}>Edit</Button>
+            <Button variant="contained" className="bg-red-500/70 hover:bg-red-600/70 backdrop-blur-sm" onClick={() => handleDelete(profile.unique_id)}>Delete</Button>
+          </>
+        )}
       </Box>
     </Box>
   );

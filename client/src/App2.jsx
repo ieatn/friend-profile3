@@ -9,23 +9,43 @@ import { UserProvider, useUser } from './contexts/UserContext';
 
 function App2Content() {
   const [profileIds, setProfileIds] = useState([]);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { isLoading, isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
   const { currentUserId, setCurrentUserId } = useUser();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
+      const uniqueId = user.sub;
+      console.log("Auth0 Unique ID:", uniqueId);
+      setCurrentUserId(uniqueId);
+      loginToServer(uniqueId);
       fetchProfileIds();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
+
+  const loginToServer = async (uniqueId) => {
+    try {
+      const loginResponse = await axios.post(`${API_URL}/profiles/login`, { unique_id: uniqueId });
+      if (loginResponse.status === 201) {
+        console.log("Logged in successfully on server");
+        return loginResponse.data.unique_id;
+      } else if (loginResponse.status === 409) {
+        console.log("Profile already exists, proceeding with existing profile");
+        return uniqueId;
+      } else {
+        console.error("Unexpected response from server:", loginResponse.data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error during server authentication:', error);
+      return null;
+    }
+  };
 
   const fetchProfileIds = async () => {
     try {
       const response = await axios.get(`${API_URL}/profiles`);
-      const ids = response.data.map(profile => profile.id);
+      const ids = response.data.map(profile => profile.unique_id);
       setProfileIds(ids);
     } catch (error) {
       console.error('Error fetching profile IDs:', error);
@@ -34,26 +54,8 @@ function App2Content() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setCurrentUserId(currentUserId);
     if (currentUserId) {
       navigate(`/app?id=${currentUserId}`);
-    }
-  };
-
-  const handleUsernamePasswordSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const endpoint = isSignUp ? `${API_URL}/signup` : `${API_URL}/login`;
-      const response = await axios.post(endpoint, { username, password });
-      if (response.data.success) {
-        setCurrentUserId(response.data.userId);
-        navigate(`/app?id=${response.data.userId}`);
-      } else {
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
     }
   };
 
@@ -99,50 +101,22 @@ function App2Content() {
                 Welcome, {user.name}!
               </Typography>
             </Box>
-            <Typography variant="h6" gutterBottom className="text-center text-gray-700">
-              {isSignUp ? 'Sign Up' : 'Log In'} with Username and Password
-            </Typography>
-            <form onSubmit={handleUsernamePasswordSubmit} className="space-y-4">
-              <TextField
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                label="Username"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                label="Password"
-                type="password"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-              />
-              <Button 
-                type="submit" 
-                variant="contained" 
-                fullWidth
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                {isSignUp ? 'Sign Up' : 'Log In'}
-              </Button>
-            </form>
-            <Button
-              onClick={() => setIsSignUp(!isSignUp)}
-              variant="text"
+            {/* <Typography variant="h6" gutterBottom className="text-center text-gray-700">
+              Your User ID: {currentUserId}
+            </Typography> */}
+            <Button 
+              onClick={handleSubmit}
+              variant="contained" 
               fullWidth
-              className="mt-2 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded"
+              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              {isSignUp ? 'Already have an account? Log In' : 'Don\'t have an account? Sign Up'}
+              Continue to App
             </Button>
-            {profileIds.length > 0 && (
+            {/* {profileIds.length > 0 && (
               <Typography variant="body2" className="mt-4 text-gray-600">
                 Available Profile IDs: {profileIds.join(', ')}
               </Typography>
-            )}
-         
+            )} */}
           </>
         )}
       </motion.div>
@@ -155,8 +129,28 @@ function App2Content() {
           Log Out
         </Button>
       )}
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
     </Box>
-    
   );
 }
 

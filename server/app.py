@@ -54,14 +54,14 @@ def get_all_profiles():
         cursor.close()
         conn.close()
 
-# READ: Get a single profile by ID
-@app.route('/profiles/<int:id>', methods=['GET'])
-def get_profile(id):
+# READ: Get a single profile by unique_id
+@app.route('/profiles/<string:unique_id>', methods=['GET'])
+def get_profile(unique_id):
     try:
         conn = connection_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT * FROM friend_profiles WHERE id = %s", (id,))
+        cursor.execute("SELECT * FROM friend_profiles WHERE unique_id = %s", (unique_id,))
         profile = cursor.fetchone()
 
         if profile:
@@ -83,8 +83,9 @@ def create_profile():
         cursor = conn.cursor()
 
         profile_data = request.json.get('profile_data')
-        sql = "INSERT INTO friend_profiles (profile_data) VALUES (%s)"
-        cursor.execute(sql, (profile_data,))
+        unique_id = request.json.get('unique_id')
+        sql = "INSERT INTO friend_profiles (unique_id, profile_data) VALUES (%s, %s)"
+        cursor.execute(sql, (unique_id, profile_data))
 
         conn.commit()
 
@@ -94,15 +95,16 @@ def create_profile():
     finally:
         cursor.close()
         conn.close()
-# UPDATE: Update a profile by ID
-@app.route('/profiles/<int:id>', methods=['PUT'])
-def update_profile(id):
+
+# UPDATE: Update a profile by unique_id
+@app.route('/profiles/<string:unique_id>', methods=['PUT'])
+def update_profile(unique_id):
     try:
         conn = connection_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
 
         # Fetch the existing profile data
-        cursor.execute("SELECT profile_data FROM friend_profiles WHERE id = %s", (id,))
+        cursor.execute("SELECT profile_data FROM friend_profiles WHERE unique_id = %s", (unique_id,))
         existing_profile = cursor.fetchone()
 
         if not existing_profile:
@@ -116,8 +118,8 @@ def update_profile(id):
 
         # If there are changes, update the profile
         cursor.execute(
-            "UPDATE friend_profiles SET profile_data = %s WHERE id = %s",
-            (new_profile_data, id)
+            "UPDATE friend_profiles SET profile_data = %s WHERE unique_id = %s",
+            (new_profile_data, unique_id)
         )
         
         conn.commit()
@@ -129,14 +131,14 @@ def update_profile(id):
         cursor.close()
         conn.close()
 
-# DELETE: Delete a profile by ID
-@app.route('/profiles/<int:id>', methods=['DELETE'])
-def delete_profile(id):
+# DELETE: Delete a profile by unique_id
+@app.route('/profiles/<string:unique_id>', methods=['DELETE'])
+def delete_profile(unique_id):
     try:
         conn = connection_pool.get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM friend_profiles WHERE id = %s", (id,))
+        cursor.execute("DELETE FROM friend_profiles WHERE unique_id = %s", (unique_id,))
         conn.commit()
 
         if cursor.rowcount == 0:
@@ -150,14 +152,6 @@ def delete_profile(id):
         conn.close()
 
 
-
-
-
-
-
-
-
-
 @app.route('/profiles/search', methods=['GET'])
 def search_profiles():
     try:
@@ -169,7 +163,7 @@ def search_profiles():
 
         # Construct the base SQL query
         sql = """
-        SELECT id, profile_data
+        SELECT unique_id, profile_data
         FROM friend_profiles
         WHERE """
 
@@ -195,11 +189,11 @@ def search_profiles():
                 try:
                     profile_data = json.loads(result['profile_data'])
                     formatted_results.append({
-                        'id': result['id'],
+                        'unique_id': result['unique_id'],
                         'profile_data': profile_data
                     })
                 except json.JSONDecodeError:
-                    app.logger.error(f"Invalid JSON in profile_data for id {result['id']}")
+                    app.logger.error(f"Invalid JSON in profile_data for unique_id {result['unique_id']}")
                     continue
 
             return jsonify(formatted_results), 200
@@ -214,20 +208,38 @@ def search_profiles():
         cursor.close()
         conn.close()
 
+        
+@app.route('/profiles/login', methods=['POST'])
+def login():
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
 
+        unique_id = request.json.get('unique_id')
+        if not unique_id:
+            return jsonify({'error': 'unique_id is required'}), 400
 
+        # Check if the unique_id already exists
+        cursor.execute("SELECT * FROM friend_profiles WHERE unique_id = %s", (unique_id,))
+        existing_profile = cursor.fetchone()
 
+        if existing_profile:
+            return jsonify({'message': 'Profile already exists'}), 409
 
+        # Insert new profile with empty profile_data
+        cursor.execute(
+            "INSERT INTO friend_profiles (unique_id, profile_data) VALUES (%s, %s)",
+            (unique_id, json.dumps({}))
+        )
+        conn.commit()
 
+        return jsonify({'message': 'Profile created successfully', 'unique_id': unique_id}), 201
 
-
-
-
-
-
-
-
-
+    except mysql.connector.Error as err:
+        return jsonify({'error': str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 
 
@@ -262,72 +274,7 @@ def get_distance():
         app.logger.error(f"An unexpected error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/signup', methods=['POST'])
-def signup():
-    try:
-        conn = connection_pool.get_connection()
-        cursor = conn.cursor()
 
-        data = request.json
-        username = data.get('username')
-        password = data.get('password')
-
-        if not username or not password:
-            return jsonify({'success': False, 'message': 'Username and password are required'}), 400
-
-        # Check if username already exists
-        cursor.execute("SELECT id FROM friend_profiles WHERE username = %s", (username,))
-        if cursor.fetchone():
-            return jsonify({'success': False, 'message': 'Username already exists'}), 409
-
-        # Hash the password
-        hashed_password = generate_password_hash(password)
-
-        # Insert new user
-        cursor.execute(
-            "INSERT INTO friend_profiles (username, password, profile_data) VALUES (%s, %s, %s)",
-            (username, hashed_password, '{}')
-        )
-        conn.commit()
-
-        # Get the new user's ID
-        new_user_id = cursor.lastrowid
-
-        return jsonify({'success': True, 'message': 'User created successfully', 'userId': new_user_id}), 201
-
-    except mysql.connector.Error as err:
-        return jsonify({'success': False, 'error': str(err)}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.route('/login', methods=['POST'])
-def login():
-    try:
-        conn = connection_pool.get_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        data = request.json
-        username = data.get('username')
-        password = data.get('password')
-
-        if not username or not password:
-            return jsonify({'success': False, 'message': 'Username and password are required'}), 400
-
-        # Fetch user
-        cursor.execute("SELECT id, password FROM friend_profiles WHERE username = %s", (username,))
-        user = cursor.fetchone()
-
-        if user and check_password_hash(user['password'], password):
-            return jsonify({'success': True, 'message': 'Login successful', 'userId': user['id']}), 200
-        else:
-            return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
-
-    except mysql.connector.Error as err:
-        return jsonify({'success': False, 'error': str(err)}), 500
-    finally:
-        cursor.close()
-        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)

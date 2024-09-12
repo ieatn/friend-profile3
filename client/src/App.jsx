@@ -42,6 +42,33 @@ function App() {
     }
   }, []);
 
+
+  const checkNonEmptyProfiles = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/profiles`);
+      const hasNonEmptyProfiles = response.data.some(profile => {
+        const profileData = JSON.parse(profile.profile_data);
+        return profileData && Object.keys(profileData).length > 0;
+      });
+
+      if (hasNonEmptyProfiles) {
+        navigate('/profiles');
+      } else {
+        alert("No profiles with data available.");
+      }
+    } catch (error) {
+      console.error('Error checking profiles:', error);
+      alert("Error checking profiles. Please try again.");
+    }
+  };
+
+
+
+
+
+
+
+
   useEffect(() => {
     console.log('currentUserId', currentUserId);
     const fetchProfileData = async () => {
@@ -77,11 +104,11 @@ function App() {
       const response = await axios.get(`${API_URL}/profiles/search?${searchParams.toString()}`);
       if (response.data && response.data.length > 0) {
         // have to filter out the current user's profile from the search results, in string format
-        const matchingResult = response.data.find(result => String(result.id) === String(currentUserId));
+        const matchingResult = response.data.find(result => String(result.unique_id) === String(currentUserId));
         console.log('Matching result:', matchingResult);
-        const filteredResults = response.data.filter(result => String(result.id) !== String(currentUserId));
+        const filteredResults = response.data.filter(result => String(result.unique_id) !== String(currentUserId));
         console.log('filteredResults', filteredResults);
-        console.log('Result IDs:', filteredResults.map(result => String(result.id)));
+        console.log('Result IDs:', filteredResults.map(result => String(result.unique_id)));
         const resultsWithDistance = await Promise.all(filteredResults.map(async (result) => {
           const profileData = result.profile_data;
           const distance = await calculateDistance(String(city), String(profileData.personalInfo.location));
@@ -113,8 +140,11 @@ function App() {
     }
   };
 
-  const handleViewProfile = (id) => {
-    navigate(`/profile/${id}`);
+  // for params to work, must use the right term, ill call it newId
+  // actually this doesnt even fucking work, maybe its stuck at id because of the route in index.js
+  const handleViewProfile = (newId) => {
+    console.log('id', newId);
+    navigate(`/profile/${newId}`);
   };
 
   const handleFilterToggle = (filterName) => {
@@ -203,15 +233,14 @@ function App() {
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link to="/profiles" className="w-full">
-                    <Button 
-                      variant="contained" 
-                      fullWidth
-                      className="bg-green-600 text-white hover:bg-green-700 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
-                    >
-                      View All Profiles
-                    </Button>
-                  </Link>
+                <Button 
+                  variant="contained" 
+                  fullWidth
+                  className="bg-green-600 text-white hover:bg-green-700 font-semibold py-4 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out"
+                  onClick={checkNonEmptyProfiles}
+                >
+                  View All Profiles
+                </Button>
                 </motion.div>
               </Box>
 
@@ -285,7 +314,7 @@ function App() {
                           })()}
                         </Typography>
                         <Button
-                          onClick={() => handleViewProfile(result.id)}
+                          onClick={() => handleViewProfile(result.unique_id)}
                           variant="contained"
                           className="bg-blue-600 text-white hover:bg-blue-700 font-semibold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out"
                         >
@@ -337,6 +366,9 @@ function App() {
             Log Out
           </Button>
         )}
+
+
+      
       </motion.div>
 
       <motion.div

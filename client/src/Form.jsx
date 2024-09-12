@@ -15,16 +15,18 @@ export default function Form() {
   const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
-    console.log('currentUserId', currentUserId);
     const fetchProfileData = async () => {
-      
       if (currentUserId) {
-        console.log('currentUserId', currentUserId);
         try {
           const response = await axios.get(`${API_URL}/profiles/${currentUserId}`);
           const parsedProfileData = JSON.parse(response.data.profile_data);
           if (parsedProfileData && Object.keys(parsedProfileData).length > 0) {
             setProfileData(parsedProfileData);
+            // Fill in all the fields with the fetched data
+            setPersonalInfo(parsedProfileData.personalInfo || {});
+            setLifestyle(parsedProfileData.lifestyle || {});
+            setInterests(parsedProfileData.interests || {});
+            setContact(parsedProfileData.contact || {});
           }
         } catch (error) {
           console.error('Error fetching profile:', error);
@@ -76,27 +78,6 @@ export default function Form() {
     phone: '',
     email: '',
   });
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (currentUserId) {
-        try {
-          const response = await axios.get(`${API_URL}/profiles/user/${currentUserId}`);
-          if (response.data) {
-            const profileData = JSON.parse(response.data.profile_data);
-            setPersonalInfo(profileData.personalInfo);
-            setLifestyle(profileData.lifestyle);
-            setInterests(profileData.interests);
-            setContact(profileData.contact);
-          }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-        }
-      }
-    };
-
-    fetchProfile();
-  }, [currentUserId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

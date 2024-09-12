@@ -31,15 +31,6 @@ export default function Profile() {
     }
   };
 
-  const handleDelete = async (profileId) => {
-    try {
-      await axios.delete(`${API_URL}/profiles/${profileId}`);
-      fetchProfiles();
-    } catch (error) {
-      console.error('Error deleting profile:', error);
-    }
-  };
-
   useEffect(() => {
     fetchProfiles();
   }, []);
@@ -200,13 +191,6 @@ export default function Profile() {
             </Box>
           ))}
         </Box>
-        
-        <Box className="flex justify-between mt-8">
-          <Link to={`/form/${profile.id}`}>
-            <Button variant="contained" size="small" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">Edit</Button>
-          </Link>
-          <Button variant="contained" size="small" className="bg-red-500/70 hover:bg-red-600/70 backdrop-blur-sm" onClick={() => handleDelete(profile.id)}>Delete</Button>
-        </Box>
       </Box>
     );
   };
@@ -221,7 +205,7 @@ export default function Profile() {
           className="h-full w-full"
         >
           {profiles.map((profile) => (
-            <SwiperSlide key={profile.id}>
+            <SwiperSlide key={profile.unique_id}>
               <ProfileCard profile={profile} />
             </SwiperSlide>
           ))}
