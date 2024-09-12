@@ -37,10 +37,11 @@ export default function Profile() {
 
   const ProfileCard = ({ profile }) => {
     const [useRealisticPhoto, setUseRealisticPhoto] = useState(false);
+    const name = profile.profile_data.personalInfo.name;
+    const isDefaultUser = name === 'John Doe' || name === 'Jane Smith';
 
     const avatarUrl = profile.profile_data.personalInfo.gender === 'Female'
-      ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches
-`
+      ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
       : `https://api.dicebear.com/6.x/micah/svg?seed=${profile.profile_data.personalInfo.name}`;
     const realisticPhotoUrl = profile.profile_data.personalInfo.gender === 'Female'
       ? "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&h=200"
@@ -80,30 +81,51 @@ export default function Profile() {
         sx={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}
       >
         <Box className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/20 to-transparent rounded-t-3xl"></Box>
-        <Box className="flex justify-end mb-4">
-          <Typography component="span" className="mr-2 text-sm">Avatar</Typography>
-          <Switch
-            checked={useRealisticPhoto}
-            onChange={handleTogglePhoto}
-            color="default"
-            size="small"
+        {isDefaultUser && (
+          <Box className="flex justify-end mb-4">
+            <Typography component="span" className="mr-2 text-sm">Avatar</Typography>
+            <Switch
+              checked={useRealisticPhoto}
+              onChange={handleTogglePhoto}
+              color="default"
+              size="small"
+            />
+            <Typography component="span" className="ml-2 text-sm">Realistic</Typography>
+          </Box>
+        )}
+        {isDefaultUser ? (
+          <Box
+            component="img"
+            src={useRealisticPhoto ? realisticPhotoUrl : avatarUrl}
+            alt={profile.profile_data.personalInfo.name}
+            sx={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              border: '4px solid white',
+              marginBottom: 4,
+              objectFit: 'cover',
+            }}
+            className="mx-auto shadow-lg"
           />
-          <Typography component="span" className="ml-2 text-sm">Realistic</Typography>
-        </Box>
-        <Box
-          component="img"
-          src={useRealisticPhoto ? realisticPhotoUrl : avatarUrl}
-          alt={profile.profile_data.personalInfo.name}
-          sx={{
-            width: 140,
-            height: 140,
-            borderRadius: '50%',
-            border: '4px solid white',
-            marginBottom: 4,
-            objectFit: 'cover',
-          }}
-          className="mx-auto shadow-lg"
-        />
+        ) : (
+          <Box
+            sx={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              border: '4px solid white',
+              marginBottom: 4,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            className="mx-auto shadow-lg"
+          >
+            <Typography variant="h4">{name.charAt(0)}</Typography>
+          </Box>
+        )}
         <Typography variant="h4" component="h2" className="mb-6 font-bold text-center">
           {profile.profile_data.personalInfo.name}
         </Typography>

@@ -24,7 +24,7 @@ export default function ProfileDetail() {
   const isCurrentUser = id === currentUserId;
   const [profile, setProfile] = useState(null);
   const [useRealisticPhoto, setUseRealisticPhoto] = useState(false);
-
+  
   const navigate = useNavigate();
 
   const renderInterestItem = (label, value) => {
@@ -66,8 +66,14 @@ export default function ProfileDetail() {
     fetchProfile();
   }, [id, currentUserId]); // Add id as a dependency
 
+
+  // if profile is not loaded, show loading message
   if (!profile) return <Typography>Loading...</Typography>;
 
+  // has to load after profile is loaded or else bug
+  const name = profile.profile_data.personalInfo.name;
+  const isDefaultUser = name === 'John Doe' || name === 'Jane Smith';
+  
   const avatarUrl = profile.profile_data.personalInfo.gender === 'Female'
     ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
     : `https://api.dicebear.com/6.x/micah/svg?seed=${profile.profile_data.personalInfo.name}`;
@@ -78,11 +84,6 @@ export default function ProfileDetail() {
   const handleTogglePhoto = () => {
     setUseRealisticPhoto(!useRealisticPhoto);
   };
-
-  const handleViewProfile = (currentUserId) => {
-    navigate(`/profile/${currentUserId}`);
-  };
-
 
   const handleDelete = async (unique_id) => {
     const isConfirmed = window.confirm("Are you sure you want to delete this profile?");
@@ -103,30 +104,51 @@ export default function ProfileDetail() {
                  h-full relative flex flex-col"
           sx={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}
         >
+          {isDefaultUser && (
           <Box className="flex justify-end mb-4">
-          <Typography component="span" className="mr-2 text-sm">Avatar</Typography>
-          <Switch
-            checked={useRealisticPhoto}
-            onChange={handleTogglePhoto}
-            color="default"
-            size="small"
+            <Typography component="span" className="mr-2 text-sm">Avatar</Typography>
+            <Switch
+              checked={useRealisticPhoto}
+              onChange={handleTogglePhoto}
+              color="default"
+              size="small"
+            />
+            <Typography component="span" className="ml-2 text-sm">Realistic</Typography>
+          </Box>
+        )}
+        {isDefaultUser ? (
+          <Box
+            component="img"
+            src={useRealisticPhoto ? realisticPhotoUrl : avatarUrl}
+            alt={profile.profile_data.personalInfo.name}
+            sx={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              border: '4px solid white',
+              marginBottom: 4,
+              objectFit: 'cover',
+            }}
+            className="mx-auto shadow-lg"
           />
-          <Typography component="span" className="ml-2 text-sm">Realistic</Typography>
-        </Box>
-        <Box
-          component="img"
-          src={useRealisticPhoto ? realisticPhotoUrl : avatarUrl}
-          alt={profile.profile_data.personalInfo.name}
-          sx={{
-            width: 140,
-            height: 140,
-            borderRadius: '50%',
-            border: '4px solid white',
-            marginBottom: 4,
-            objectFit: 'cover',
-          }}
-          className="mx-auto shadow-lg"
-        />
+        ) : (
+          <Box
+            sx={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              border: '4px solid white',
+              marginBottom: 4,
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            className="mx-auto shadow-lg"
+          >
+            <Typography variant="h4">{name.charAt(0)}</Typography>
+          </Box>
+        )}
         <Typography variant="h4" component="h2" className="mb-6 font-bold text-center">
           {profile.profile_data.personalInfo.name}
         </Typography>

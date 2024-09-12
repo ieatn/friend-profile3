@@ -179,14 +179,28 @@ function App() {
         >
           {profileData && (
             <Box className="flex items-center mb-6">
-              <Avatar
-                src={profileData.personalInfo.gender === 'Female'
-                  ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
-                  : `https://api.dicebear.com/6.x/micah/svg?seed=${profileData.personalInfo.name}`
-                }
-                alt={profileData.personalInfo.name}
-                sx={{ width: 80, height: 80, marginRight: 3 }}
-              />
+              {(profileData.personalInfo.name === 'John Doe' || profileData.personalInfo.name === 'Jane Smith') ? (
+                <Avatar
+                  src={profileData.personalInfo.gender === 'Female'
+                    ? `https://api.dicebear.com/9.x/adventurer/svg?seed=Patches`
+                    : `https://api.dicebear.com/6.x/micah/svg?seed=${profileData.personalInfo.name}`
+                  }
+                  alt={profileData.personalInfo.name}
+                  sx={{ width: 80, height: 80, marginRight: 3 }}
+                />
+              ) : (
+                <Avatar
+                  sx={{ 
+                    width: 80, 
+                    height: 80, 
+                    marginRight: 3, 
+                    bgcolor: 'primary.main',
+                    fontSize: '2rem'
+                  }}
+                >
+                  {profileData.personalInfo.name.charAt(0)}
+                </Avatar>
+              )}
               <Typography variant="h3" className="font-bold text-gray-800">
                 Hello, {profileData.personalInfo.name}!
               </Typography>

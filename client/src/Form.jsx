@@ -49,6 +49,7 @@ export default function Form() {
     spiritualReligious: '',
     aboutMe: '',
     tagline: '',
+    gender: '',
   });
 
   const [lifestyle, setLifestyle] = useState({
@@ -106,7 +107,7 @@ export default function Form() {
   };
 
   const handleClear = () => {
-    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '', spiritualReligious: '', aboutMe: '', tagline: '' });
+    setPersonalInfo({ name: '', age: '', location: '', relationshipStatus: '', favoriteFood: '', favoriteRestaurants: '', sports: '', accomplishments: '', spiritualReligious: '', aboutMe: '', tagline: '', gender: '' });
     setLifestyle({ occupation: '', values: [], goals: '', financialGoals: '', financialSituation: '', favoriteCauses: '' });
     setInterests({ hobbies: [], favoriteActivities: [], favoriteMedia: [], favoriteTVShows: '', favoriteGames: '', favoriteBooks: '', favoriteQuotes: '' });
     setContact({ facebook: '', instagram: '', twitter: '', linkedin: '', phone: '', email: '' });
@@ -278,6 +279,18 @@ export default function Form() {
               rows={3}
               className="col-span-2"
             />
+            <FormControl fullWidth>
+              <InputLabel>Gender</InputLabel>
+              <Select
+                value={personalInfo.gender}
+                onChange={(e) => setPersonalInfo({...personalInfo, gender: e.target.value})}
+                required
+              >
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
           </div>
         </div>
 
