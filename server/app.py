@@ -6,15 +6,25 @@ import json
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
-
 # debugging
 import requests
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+import langchain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.utilities import SQLDatabase
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI
+from openai import OpenAI
+
+
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
+
+api_key = os.getenv('OPENAI_API_KEY')
 
 db_host = os.getenv('DB_HOST')
 db_user = os.getenv('DB_USER')
@@ -274,6 +284,94 @@ def get_distance():
         app.logger.error(f"An unexpected error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+
+
+# langchain 
+
+# connection to database and api key
+# print(api_key)
+client = OpenAI(api_key=api_key)
+
+db_uri = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:3306/{db_database}"
+db = SQLDatabase.from_uri(db_uri)
+
+# LANGCHAIN
+# TRANSLATE QUESTION FROM ENGLISH TO SQL
+template = """
+Based on the table schema below, write a SQL query that would answer the user's question.
+{schema}
+Question: {question}
+SQL Query
+"""
+
+prompt = ChatPromptTemplate.from_template(template)
+prompt.format(schema="my schema", question="how many batteries are there?")
+
+def get_schema(_):
+    return db.get_table_info()
+
+llm = ChatOpenAI()
+sql_chain = (
+    RunnablePassthrough.assign(schema=get_schema)
+    | prompt
+    | llm.bind(stop='\nSQL Result:')
+    | StrOutputParser()
+)
+# generates a sql query from user question pretty cool
+# print(sql_chain.invoke({'question': 'how many batteries are there?'}))
+
+
+# TRANSLATE ANSWER FROM SQL TO ENGLISH
+template = """
+Based on the table schema below, question, sql query, and sql response, write a natural language response.
+{schema}
+Question: {question}
+SQL Query: {query}
+SQL Response: {response}
+"""
+prompt = ChatPromptTemplate.from_template(template)
+def run_query(query):
+    return db.run(query)
+# example holy shit this actually works
+# print(run_query('SELECT COUNT(*) AS total_batteries FROM battery;'))
+
+# COMBINE BOTH CHAINS
+full_chain = (
+    RunnablePassthrough.assign(query=sql_chain).assign(
+        schema=get_schema,
+        response=lambda variables: run_query(variables['query'])
+    )
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+# print(full_chain.invoke({'question': 'how many batteries are there?'}))
+
+def talk(prompt):
+    response = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model="gpt-3.5-turbo",
+    )
+    return response.choices[0].message.content.strip()
+
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.json
+    user_message = data.get('message')
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "user", "content": user_message},
+        ],
+        model="gpt-3.5-turbo",
+    ).choices[0].message.content.strip()
+    
+    return jsonify({'response': response})
 
 
 if __name__ == '__main__':

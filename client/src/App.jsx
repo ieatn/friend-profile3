@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
 import { useUser } from './contexts/UserContext';
+import ChatBot from './Chatbot'; // We'll create this component
 
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect } = useAuth0();
@@ -26,6 +27,7 @@ function App() {
   });
   const location = useLocation();
   const [profileData, setProfileData] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const mouseMove = e => {
@@ -381,7 +383,7 @@ function App() {
           </Button>
         )}
 
-
+        <ChatBot isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
       
       </motion.div>
 
