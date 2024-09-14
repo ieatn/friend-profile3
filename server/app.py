@@ -331,9 +331,18 @@ SQL Response: {response}
 """
 prompt = ChatPromptTemplate.from_template(template)
 def run_query(query):
-    return db.run(query)
-# example holy shit this actually works
-# print(run_query('SELECT COUNT(*) AS total_batteries FROM battery;'))
+    try:
+        conn = connection_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+    except mysql.connector.Error as err:
+        app.logger.error(f"Database error: {str(err)}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
 
 # COMBINE BOTH CHAINS
 full_chain = (
@@ -345,7 +354,6 @@ full_chain = (
     | llm
     | StrOutputParser()
 )
-# print(full_chain.invoke({'question': 'how many batteries are there?'}))
 
 def talk(prompt):
     response = client.chat.completions.create(
@@ -364,15 +372,35 @@ def talk(prompt):
 def chat():
     data = request.json
     user_message = data.get('message')
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "user", "content": user_message},
-        ],
-        model="gpt-3.5-turbo",
-    ).choices[0].message.content.strip()
-    
-    return jsonify({'response': response})
 
+    if user_message.lower().startswith('search profiles:'):
+        search_query = user_message[16:].strip()
+        
+        # Use LangChain to generate and execute SQL query
+        langchain_query = f"Find profiles that match the following description: {search_query}"
+        try:
+            sql_query = sql_chain.invoke({'question': langchain_query})
+            results = run_query(sql_query)
+            
+            if results:
+                response = "Here are the matching profiles:\n\n"
+                for result in results:
+                    response += f"Unique ID: {result['unique_id']}\n"
+                    response += f"Profile Data: {json.dumps(json.loads(result['profile_data']), indent=2)}\n\n"
+            else:
+                response = "No matching profiles found."
+        except Exception as e:
+            app.logger.error(f"Error in LangChain query: {str(e)}")
+            response = "An error occurred while searching for profiles."
+    else:
+        # Use LangChain for general queries about the database
+        try:
+            response = full_chain.invoke({'question': user_message})
+        except Exception as e:
+            app.logger.error(f"Error in LangChain query: {str(e)}")
+            response = "I'm sorry, I couldn't process that query. Can you try rephrasing it?"
+
+    return jsonify({'response': response})
 
 if __name__ == '__main__':
     app.run(debug=True)
