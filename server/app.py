@@ -40,6 +40,11 @@ connection_pool = pooling.MySQLConnectionPool(
     database=db_database
 )
 
+if (connection_pool):
+    print("Connected to database")
+else:
+    print("Failed to create connection pool")
+
 # Initialize LangChain components
 openai_api_key = os.getenv('OPENAI_API_KEY')
 
@@ -368,39 +373,78 @@ def talk(prompt):
     return response.choices[0].message.content.strip()
 
 
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     user_message = data.get('message')
+    name = data.get('name')  # Get the user's name
 
-    if user_message.lower().startswith('search profiles:'):
-        search_query = user_message[16:].strip()
+    # Log the full user message
+    app.logger.info(f"Received message: {user_message}")
+
+    # Extract the search query
+    search_query = user_message.strip()  # Use the entire message as the query
+
+    # Log the extracted search query
+    app.logger.info(f"Extracted search query: {search_query}")
+
+    # Construct a valid SQL query based on the user message
+    sql_query = f"SELECT * FROM friend_profiles WHERE profile_data LIKE '%{search_query}%'"
+
+    # Log the constructed SQL query
+    app.logger.info(f"Constructed SQL query: {sql_query}")
+
+    # Execute the SQL query using LangChain
+    results = run_query(sql_query)  # Assuming sql_query is a valid SQL query
+
+    # Check if results are empty
+    if not results:
+        return jsonify({'message': 'No matching profiles found'}), 404
+
+    # Format the results similar to search_profiles
+    formatted_results = []
+    for result in results:
+        try:
+            profile_data = json.loads(result['profile_data'])
+            formatted_results.append({
+                'unique_id': result['unique_id'],
+                'profile_data': profile_data,
+                'name': name  # Include the user's name in the response
+            })
+        except json.JSONDecodeError:
+            app.logger.error(f"Invalid JSON in profile_data for unique_id {result['unique_id']}")
+            continue
+
+    return jsonify(formatted_results), 200
+    # data = request.json
+    # user_message = data.get('message')
+    # name = data.get('name')
+    # search_query = user_message[16:].strip()
+    
+    # # Use LangChain to generate and execute SQL query
+    # langchain_query = f"Find profiles that match the following description: {search_query}"
+    # response = f"Hello, {name}! I'm here to help you find profiles that match your description."
+    # try:
+    #     sql_query = sql_chain.invoke({'question': langchain_query})
         
-        # Use LangChain to generate and execute SQL query
-        langchain_query = f"Find profiles that match the following description: {search_query}"
-        try:
-            sql_query = sql_chain.invoke({'question': langchain_query})
-            results = run_query(sql_query)
-            
-            if results:
-                response = "Here are the matching profiles:\n\n"
-                for result in results:
-                    response += f"Unique ID: {result['unique_id']}\n"
-                    response += f"Profile Data: {json.dumps(json.loads(result['profile_data']), indent=2)}\n\n"
-            else:
-                response = "No matching profiles found."
-        except Exception as e:
-            app.logger.error(f"Error in LangChain query: {str(e)}")
-            response = "An error occurred while searching for profiles."
-    else:
-        # Use LangChain for general queries about the database
-        try:
-            response = full_chain.invoke({'question': user_message})
-        except Exception as e:
-            app.logger.error(f"Error in LangChain query: {str(e)}")
-            response = "I'm sorry, I couldn't process that query. Can you try rephrasing it?"
+    #     # whenever i get the phrase "find a match" exclude the current user from the search results
+    #     if "find a match" in user_message.lower():
+    #         sql_query += f" AND name != '{name}'"
+        
+    #     results = run_query(sql_query)
+        
+    #     if results:
+    #         for result in results:
+    #             response += f"Unique ID: {result['unique_id']}\n"
+    #             response += f"Profile Data: {json.dumps(json.loads(result['profile_data']), indent=2)}\n\n"
+    #     else:
+    #         response = "No matching profiles found."
+    # except Exception as e:
+    #     app.logger.error(f"Error in LangChain query: {str(e)}")
+    #     response = "An error occurred while searching for profiles."
 
-    return jsonify({'response': response})
+    # return jsonify({'response': response})
 
 if __name__ == '__main__':
     app.run(debug=True)

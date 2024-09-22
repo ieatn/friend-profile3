@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
 import { useUser } from './contexts/UserContext';
-import ChatBot from './Chatbot'; // We'll create this component
+import ChatBot from './Chatbot';
 
 function App() {
   const { isLoading, isAuthenticated, loginWithRedirect } = useAuth0();
@@ -383,7 +383,13 @@ function App() {
           </Button>
         )}
 
-        <ChatBot isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
+        <ChatBot 
+          isOpen={isChatOpen} 
+          setIsOpen={setIsChatOpen} 
+          name={profileData?.personalInfo?.name} 
+          searchResults={searchResults}
+          setSearchResults={setSearchResults}
+        />
       
       </motion.div>
 
