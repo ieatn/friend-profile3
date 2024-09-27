@@ -19,8 +19,9 @@ function ChatBot({ isOpen, setIsOpen, name, searchResults, setSearchResults }) {
       const response = await axios.post(`${API_URL}/chat`, { message: message, name: name });
 
       if (Array.isArray(response.data)) {
-        // Update searchResults with the new data
-        setSearchResults(response.data);
+        // Filter out the current user's profile from the results
+        const filteredResults = response.data.filter(result => result.profile_data.personalInfo.name !== name);
+        setSearchResults(filteredResults);
 
         // Create a message to display the search results
         const resultsMessage = {
