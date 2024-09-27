@@ -3,10 +3,16 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from './api/Config';
+import ProfileDetail from './ProfileDetail';
+import Profile from './Profile';
+import ProfileCard from './ProfileCard'; // Import ProfileCard
+import Drawer from '@mui/material/Drawer';
 
 function ChatBot({ isOpen, setIsOpen, name, searchResults, setSearchResults }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [selectedProfile, setSelectedProfile] = useState(null); // New state for selected profile
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // New state for drawer open
 
   const handleSend = async (message = input) => {
     if (message.trim() === '') return;
@@ -22,6 +28,11 @@ function ChatBot({ isOpen, setIsOpen, name, searchResults, setSearchResults }) {
         // Filter out the current user's profile from the results
         const filteredResults = response.data.filter(result => result.profile_data.personalInfo.name !== name);
         setSearchResults(filteredResults);
+
+        // Open sidebar with the first result (or handle as needed)
+        if (filteredResults.length > 0) {
+          setSelectedProfile(filteredResults[0]); // Set the selected profile
+        }
 
         // Create a message to display the search results
         const resultsMessage = {
@@ -48,6 +59,70 @@ function ChatBot({ isOpen, setIsOpen, name, searchResults, setSearchResults }) {
       exit={{ opacity: 0, y: 20 }}
       className="fixed bottom-4 right-4 z-50"
     >
+
+
+
+
+
+
+
+
+
+
+  
+        <Drawer
+          anchor="right"
+          open={isDrawerOpen} // Keep the drawer open based on search results
+          onClose={() => setIsDrawerOpen(false)} // Close the drawer without clearing search results
+        >
+          <Box
+            sx={{ width: 600 }}
+            role="presentation"
+            className="h-full"
+          >
+            {searchResults.length > 0 ? (
+              <div className="profile-cards-container mb-4 flex justify-center items-center h-full">
+                {searchResults.map((result, index) => (
+                  <ProfileCard
+                    key={index}
+                    profile={result}
+
+                    // TODO: add realistic photo toggle
+                    useRealisticPhoto={false}
+                    handleTogglePhoto={() => {}}
+                    isDefaultUser={true}
+                    name={name}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Typography className="p-4">No results found.</Typography>
+            )}
+          </Box>
+        </Drawer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <div className="flex flex-col items-end">
         <AnimatePresence>
           {isOpen && (
@@ -76,7 +151,11 @@ function ChatBot({ isOpen, setIsOpen, name, searchResults, setSearchResults }) {
                     {message.isResults && (
                       <ul className="list-disc pl-5 mt-2">
                         {searchResults.map((result, idx) => (
-                          <li key={idx}>
+                          <li 
+                            key={idx} 
+                            className="hover:text-blue-600 cursor-pointer" 
+                            onClick={() => setIsDrawerOpen(true)}
+                          >
                             {result.profile_data.personalInfo.name} - {result.profile_data.personalInfo.location}
                           </li>
                         ))}

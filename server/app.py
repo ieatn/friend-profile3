@@ -417,34 +417,7 @@ def chat():
             continue
 
     return jsonify(formatted_results), 200
-    # data = request.json
-    # user_message = data.get('message')
-    # name = data.get('name')
-    # search_query = user_message[16:].strip()
-    
-    # # Use LangChain to generate and execute SQL query
-    # langchain_query = f"Find profiles that match the following description: {search_query}"
-    # response = f"Hello, {name}! I'm here to help you find profiles that match your description."
-    # try:
-    #     sql_query = sql_chain.invoke({'question': langchain_query})
-        
-    #     # whenever i get the phrase "find a match" exclude the current user from the search results
-    #     if "find a match" in user_message.lower():
-    #         sql_query += f" AND name != '{name}'"
-        
-    #     results = run_query(sql_query)
-        
-    #     if results:
-    #         for result in results:
-    #             response += f"Unique ID: {result['unique_id']}\n"
-    #             response += f"Profile Data: {json.dumps(json.loads(result['profile_data']), indent=2)}\n\n"
-    #     else:
-    #         response = "No matching profiles found."
-    # except Exception as e:
-    #     app.logger.error(f"Error in LangChain query: {str(e)}")
-    #     response = "An error occurred while searching for profiles."
 
-    # return jsonify({'response': response})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -11,6 +11,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import { useUser } from './contexts/UserContext';
+import ProfileCard from './ProfileCard'; // Import the new ProfileCard component
 
 export default function ProfileDetail() {
   // debugging
@@ -97,144 +98,16 @@ export default function ProfileDetail() {
   };
 
   return (
-    <Box className="relative w-full h-screen  flex justify-center items-center bg-gradient-to-br from-purple-200 to-indigo-200">
+    <Box className="relative w-full h-screen flex justify-center items-center bg-gradient-to-br from-purple-200 to-indigo-200">
       <Box className="w-full max-w-lg h-[750px] scrollbar-hide" sx={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
-        <Box 
-          className="overflow-y-auto bg-gradient-to-br from-purple-400 to-indigo-600 rounded-3xl shadow-2xl p-8 text-white
-                 h-full relative flex flex-col"
-          sx={{ '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}
-        >
-          {isDefaultUser && (
-          <Box className="flex justify-end mb-4">
-            <Typography component="span" className="mr-2 text-sm">Avatar</Typography>
-            <Switch
-              checked={useRealisticPhoto}
-              onChange={handleTogglePhoto}
-              color="default"
-              size="small"
-            />
-            <Typography component="span" className="ml-2 text-sm">Realistic</Typography>
-          </Box>
-        )}
-        {isDefaultUser ? (
-          <Box
-            component="img"
-            src={useRealisticPhoto ? realisticPhotoUrl : avatarUrl}
-            alt={profile.profile_data.personalInfo.name}
-            sx={{
-              width: 140,
-              height: 140,
-              borderRadius: '50%',
-              border: '4px solid white',
-              marginBottom: 4,
-              objectFit: 'cover',
-            }}
-            className="mx-auto shadow-lg"
+        <Box className="">
+          <ProfileCard // Use the new ProfileCard component
+            profile={profile}
+            useRealisticPhoto={useRealisticPhoto}
+            handleTogglePhoto={handleTogglePhoto}
+            isDefaultUser={isDefaultUser}
+            name={name}
           />
-        ) : (
-          <Box
-            sx={{
-              width: 140,
-              height: 140,
-              borderRadius: '50%',
-              border: '4px solid white',
-              marginBottom: 4,
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            className="mx-auto shadow-lg"
-          >
-            <Typography variant="h4">{name.charAt(0)}</Typography>
-          </Box>
-        )}
-        <Typography variant="h4" component="h2" className="mb-6 font-bold text-center">
-          {profile.profile_data.personalInfo.name}
-        </Typography>
-        
-        {profile.profile_data.personalInfo.tagline && (
-          <Typography variant="subtitle1" className="mb-4 text-center italic">
-            "{profile.profile_data.personalInfo.tagline}"
-          </Typography>
-        )}
-        <Box className="space-y-8">
-          {renderSection("About Me", "📝", (
-            <Typography>
-              {profile.profile_data.personalInfo.aboutMe}
-            </Typography>
-          ))}
-
-          {renderSection("Personal Info", "👤", (
-            <>
-              {renderInterestItem("Age:", profile.profile_data.personalInfo.age)}
-              {renderInterestItem("Location:", profile.profile_data.personalInfo.location)}
-              {renderInterestItem("Relationship Status:", profile.profile_data.personalInfo.relationshipStatus)}
-              {renderInterestItem("Spiritual/Religious Views:", profile.profile_data.personalInfo.spiritualReligious)}
-              {renderInterestItem("Favorite Food:", profile.profile_data.personalInfo.favoriteFood)}
-              {renderInterestItem("Favorite Restaurants:", profile.profile_data.personalInfo.favoriteRestaurants)}
-              {renderInterestItem("Sports:", profile.profile_data.personalInfo.sports)}
-              {renderInterestItem("Accomplishments:", profile.profile_data.personalInfo.accomplishments)}
-            </>
-          ))}
-          
-          {renderSection("Lifestyle", "🌟", (
-            <>
-              {renderInterestItem("Occupation:", profile.profile_data.lifestyle.occupation)}
-              {renderInterestItem("Goals:", profile.profile_data.lifestyle.goals)}
-              {renderInterestItem("Financial Goals:", profile.profile_data.lifestyle.financialGoals)}
-              {renderInterestItem("Favorite Causes:", profile.profile_data.lifestyle.favoriteCauses)}
-              <Box>
-                <Typography variant="subtitle2" className="font-semibold mb-2">Values:</Typography>
-                <Box className="flex flex-wrap gap-2">
-                  {profile.profile_data.lifestyle.values.map((value, idx) => (
-                    <Chip key={idx} label={value} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                  ))}
-                </Box>
-              </Box>
-            </>
-          ))}
-          
-          {renderSection("Interests", "❤️", (
-            <>
-              <Box>
-                <Typography variant="subtitle2" className="font-semibold mb-2">Hobbies:</Typography>
-                <Box className="flex flex-wrap gap-2">
-                  {profile.profile_data.interests.hobbies.map((hobby, idx) => (
-                    <Chip key={idx} label={hobby} size="small" className="bg-white/20 text-white backdrop-blur-sm" />
-                  ))}
-                </Box>
-              </Box>
-              {renderInterestItem("Favorite Activities:", profile.profile_data.interests.favoriteActivities.join(', '))}
-              {renderInterestItem("Favorite Media:", profile.profile_data.interests.favoriteMedia.join(', '))}
-              
-              {renderInterestItem("Favorite TV Shows:", profile.profile_data.interests.favoriteTVShows)}
-              {renderInterestItem("Favorite Games:", profile.profile_data.interests.favoriteGames)}
-              {renderInterestItem("Favorite Books:", profile.profile_data.interests.favoriteBooks)}
-              {renderInterestItem("Favorite Quotes:", profile.profile_data.interests.favoriteQuotes)}
-            </>
-          ))}
-
-          {renderSection("Contact", "📱", (
-            <Box className="space-y-2">
-              {profile.profile_data.contact && (
-                <>
-                  {renderInterestItem(<EmailIcon fontSize="small" sx={{ color: '#EA4335', marginRight: '8px' }} />, profile.profile_data.contact.email)}
-                  <Box my={1} />
-                  {renderInterestItem(<PhoneIcon fontSize="small" sx={{ color: '#34A853', marginRight: '8px' }} />, profile.profile_data.contact.phone)}
-                  <Box my={1} />
-                  {renderInterestItem(<FacebookIcon fontSize="small" sx={{ color: '#1877F2', marginRight: '8px' }} />, profile.profile_data.contact.facebook)}
-                  <Box my={1} />
-                  {renderInterestItem(<InstagramIcon fontSize="small" sx={{ color: '#E4405F', marginRight: '8px' }} />, profile.profile_data.contact.instagram)}
-                  <Box my={1} />
-                  {renderInterestItem(<TwitterIcon fontSize="small" sx={{ color: '#1DA1F2', marginRight: '8px' }} />, profile.profile_data.contact.twitter)}
-                  <Box my={1} />
-                  {renderInterestItem(<LinkedInIcon fontSize="small" sx={{ color: '#0A66C2', marginRight: '8px' }} />, profile.profile_data.contact.linkedin)}
-                </>
-              )}
-            </Box>
-          ))}
-          </Box>
         </Box>
       </Box>
       <Box className="absolute top-4 right-4 flex gap-2 z-10">
